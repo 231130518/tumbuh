@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <script src="../js/loading.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pratinjau Artikel Lengkap — Admin TUMBUH</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="admin-preview">
+  <header class="admin-nav">
+    <div class="wrap admin-nav-inner">
+      <a href="../index.html" class="brand"><img class="brand-logo" src="../assets/logo-tumbuh.png" alt="Logo TUMBUH">tumbuh.</a>
+      <nav aria-label="Navigasi admin">
+        <a href="../index.html">Beranda</a><a href="../articles.html">Artikel Edukasi</a>
+        <a class="active" href="dashboard.html">Peninjauan Artikel</a>
+      </nav>
+      <span class="admin-pill">Admin <span>●</span></span>
+    </div>
+  </header>
+  <main>
+    <section class="admin-preview-intro">
+      <div class="wrap admin-preview-intro-inner">
+        <div>
+          <div class="eyebrow">PRATINJAU ARTIKEL / SEBELUM DITERBITKAN</div>
+          <h2>Baca seluruh isi artikel.</h2>
+          <p>Periksa tulisan dan gambar secara utuh sebelum mengambil keputusan.</p>
+          <span id="preview-status" class="review-status pending">● Menunggu tinjauan</span>
+          <span class="demo-badge">Demo lokal — belum terhubung database</span>
+        </div>
+        <a class="btn" href="dashboard.html">← Kembali ke Peninjauan</a>
+      </div>
+    </section>
+    <div id="admin-preview-article" hidden>
+      <section class="admin-preview-hero">
+        <div class="wrap admin-preview-hero-inner">
+          <p class="article-breadcrumb">ARTIKEL EDUKASI / PRATINJAU LENGKAP</p>
+          <h1 id="preview-title"></h1>
+          <p id="preview-subtitle" class="admin-preview-subtitle"></p>
+          <p id="preview-meta" class="admin-preview-meta"></p>
+        </div>
+        <div class="article-hero-rings" aria-hidden="true"></div>
+      </section>
+      <figure class="admin-preview-image"><img id="preview-cover" alt="Gambar sampul artikel yang dikirim penulis"><button class="admin-cover-full-btn" id="show-full-cover" type="button">Lihat gambar utuh ⤢</button></figure>
+      <dialog class="admin-cover-dialog" id="full-cover-dialog" aria-label="Gambar sampul artikel ukuran utuh">
+        <div class="admin-cover-dialog-head"><strong>Gambar sampul lengkap</strong><button type="button" id="close-full-cover" aria-label="Tutup gambar">✕ Tutup</button></div>
+        <img id="full-cover-img" alt="Pratinjau gambar sampul artikel secara utuh">
+      </dialog>
+      <section class="admin-preview-content">
+        <div class="wrap">
+          <div class="admin-preview-reading">
+            <span class="article-section-bar" aria-hidden="true"></span>
+            <div class="admin-preview-article-body" id="preview-body"></div>
+          </div>
+        </div>
+      </section>
+      <section class="admin-preview-actions">
+        <div class="wrap admin-preview-actions-inner">
+          <div>
+            <span class="eyebrow">SELESAI MEMBACA?</span>
+            <h2>Ambil keputusan setelah membaca seluruh artikel.</h2>
+            <p id="review-decision-note">Perubahan status di sini hanya tersimpan di browser ini, belum diterbitkan secara online.</p>
+          </div>
+          <div class="admin-preview-buttons" id="preview-action-buttons">
+            <button class="btn mint" type="button" id="approve-article">✓ Setujui Artikel</button>
+            <button class="btn outline" type="button" id="reject-article">✕ Tolak Artikel</button>
+          </div>
+        </div>
+        <p class="wrap review-feedback" id="preview-feedback" role="status" hidden></p>
+      </section>
+    </div>
+    <section id="preview-not-found" class="wrap admin-preview-notfound" hidden>
+      <h2>Artikel tidak ditemukan.</h2>
+      <p>Artikel yang kamu pilih tidak tersedia dalam pratinjau browser ini.</p>
+      <a class="btn" href="dashboard.html">Kembali ke Peninjauan ↗</a>
+    </section>
+  </main>
+  <div id="site-footer"></div>
+  <script src="../js/main.js" defer></script>
+  <script src="../js/review.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js" defer></script><script src="../js/aos-tumbuh.js" defer></script></body>
+</html>
