@@ -1,2 +1,57 @@
-<!doctype html><html lang="id"><head><script src="../js/loading.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login Admin — TUMBUH</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
-<link rel="stylesheet" href="../css/style.css"></head><body data-page="admin-login"><div id="site-header"></div><main class="section" style="min-height:85vh;display:grid;place-items:center;padding-top:160px"><div class="form-card" style="width:min(450px,calc(100vw - 36px))"><span class="eyebrow">RUANG ADMIN</span><h3 style="margin-top:13px">Selamat datang kembali.</h3><p class="body-muted">Halaman login admin — pratinjau tampilan.</p><div class="field"><label>Username</label><input placeholder="Username admin" autocomplete="username"></div><div class="field" style="margin-top:18px"><label>Password</label><input type="password" placeholder="Password admin" autocomplete="current-password"></div><button class="btn" type="button" onclick="document.getElementById('login-note').hidden=false">Masuk ke Dashboard ↗</button><div class="notice" id="login-note" hidden>Mode pratinjau: autentikasi belum terhubung. Untuk melihat desain dashboard, <a href="dashboard.html" style="text-decoration:underline;font-weight:bold">buka pratinjau dashboard</a>.</div></div></main><script src="../js/main.js" defer></script><script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js" defer></script><script src="../js/aos-tumbuh.js" defer></script></body></html>
+<!doctype html>
+<html lang="id">
+  <head>
+    <script src="../js/loading.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login Admin — TUMBUH</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body data-page="admin-login">
+    <div id="site-header"></div>
+    <main class="section login-page">
+      <div class="form-card login-card">
+        <span class="eyebrow">RUANG ADMIN</span>
+        <h3>Selamat datang kembali.</h3>
+        <p class="body-muted">Halaman login admin — pratinjau tampilan.</p>
+        <div class="field">
+          <label for="admin-username">Username</label
+          ><input
+            id="admin-username"
+            placeholder="Username admin"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field login-password">
+          <label for="admin-password">Password</label
+          ><input
+            id="admin-password"
+            type="password"
+            placeholder="Password admin"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="btn" type="button" id="admin-login-preview">
+          Masuk ke Dashboard ↗
+        </button>
+        <div class="notice" id="login-note" hidden>
+          Mode pratinjau: autentikasi belum terhubung. Untuk melihat desain
+          dashboard,
+          <a href="dashboard.html" class="text-link">buka pratinjau dashboard</a
+          >.
+        </div>
+      </div>
+    </main>
+    <script src="../js/main.js" defer></script>
+    <script src="../js/review.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
+      defer
+    ></script>
+    <script src="../js/aos-tumbuh.js" defer></script>
+  </body>
+</html>
