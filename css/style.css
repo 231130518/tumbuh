@@ -222,7 +222,7 @@ body[data-page="admin-preview"]{background:#f8faf5}
 
 
 /* ================================================================
-   AOS TUMBUH — halus, ringan, sekali saja, termasuk footer.
+   AOS TUMBUH — halus, ringan, sekali saja; footer tetap statis.
    Semua gerak memakai opacity + transform (tanpa mengubah layout).
    ================================================================ */
 html { scroll-behavior:smooth; }
@@ -334,8 +334,10 @@ html.tumbuh-hero-shown body[data-page="home"] .hero-content > .hero-description-
     transition: none !important;
   }
   html body main [data-aos].aos-animate {
-    opacity: 1 !important;
-    transform: translate3d(0, 0, 0) !important;
+    /* Biarkan keyframes mengatur opacity/transform, termasuk saat jeda.
+       !important pada kedua properti ini akan mengalahkan animasi. */
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
     transition: none !important;
     animation-name: tumbuhHeroUp !important;
     animation-duration: 740ms !important;
