@@ -32,7 +32,31 @@ const articleData = [
     author: "Tim Edukasi TUMBUH",
   },
 ];
-const rootPath = location.pathname.includes("/admin/") ? "../" : "./";
+// Lokasi script menjadi acuan: bekerja pada domain sendiri maupun /tumbuh/.
+const rootPath = new URL("../", document.currentScript.src).pathname;
+const routes = {
+  home: rootPath,
+  articles: `${rootPath}artikel/`,
+  article: `${rootPath}artikel/baca/`,
+  submit: `${rootPath}kirim-artikel/`,
+  results: `${rootPath}hasil-pemeriksaan/`,
+  login: `${rootPath}admin/login/`,
+  dashboard: `${rootPath}admin/peninjauan/`,
+  preview: `${rootPath}admin/pratinjau/`,
+};
+window.TumbuhRoutes = routes;
+
+// index.html tetap merupakan file fisik, tetapi address bar memakai alamat folder.
+if (
+  location.protocol !== "file:" &&
+  location.pathname.endsWith("/index.html")
+) {
+  history.replaceState(
+    history.state,
+    "",
+    location.pathname.slice(0, -10) + location.search + location.hash,
+  );
+}
 function header() {
   const target = document.getElementById("site-header");
   if (!target) return;
@@ -42,14 +66,14 @@ function header() {
   );
   target.innerHTML = `<header class="topbar ${home ? "" : "inner"}" id="topbar">
     <div class="wrap nav">
-      <a href="${rootPath}index.html" class="brand"><img class="brand-logo" src="${rootPath}assets/logo-tumbuh.png" alt="">tumbuh.</a>
+      <a href="${routes.home}" class="brand"><img class="brand-logo" src="${rootPath}assets/logo-tumbuh.png" alt="">tumbuh.</a>
       <nav class="navlinks" id="navlinks" aria-label="Navigasi utama">
-        <a href="${rootPath}index.html">Beranda</a>
-        <a href="${rootPath}index.html#mengenal">${compactLinks ? "Tentang Kami" : "Kenali Tumbuh"}</a>
-        <a href="${rootPath}articles.html">${compactLinks ? "Edukasi" : "Artikel Edukasi"}</a>
-        ${compactLinks ? "" : `<a href="${rootPath}submit.html">Kirim Artikel</a>`}
+        <a href="${routes.home}">Beranda</a>
+        <a href="${routes.home}#mengenal">${compactLinks ? "Tentang Kami" : "Kenali Tumbuh"}</a>
+        <a href="${routes.articles}">${compactLinks ? "Edukasi" : "Artikel Edukasi"}</a>
+        ${compactLinks ? "" : `<a href="${routes.submit}">Kirim Artikel</a>`}
       </nav>
-      <a class="nav-cta" href="${rootPath}index.html#cek">Cek Pertumbuhan ↗</a>
+      <a class="nav-cta" href="${routes.home}#cek">Cek Pertumbuhan ↗</a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Buka navigasi" aria-expanded="false" aria-controls="navlinks">☰</button>
     </div>
   </header>`;
@@ -86,17 +110,88 @@ function footer() {
   target.innerHTML = `<footer class="footer">
     <div class="footer-glow" aria-hidden="true"></div>
     <div class="wrap"><div class="footer-columns">
-      <div><a class="brand" href="${rootPath}index.html"><img class="brand-logo" src="${rootPath}assets/logo-tumbuh.png" alt="">tumbuh.</a>
+      <div><a class="brand" href="${routes.home}"><img class="brand-logo" src="${rootPath}assets/logo-tumbuh.png" alt="">tumbuh.</a>
         <p class="footer-description">Menemani orang tua memahami setiap langkah kecil perjalanan pertumbuhan anak dengan informasi yang ramah dan mudah dipahami.</p></div>
       <div><h4>Jelajahi</h4><div class="footer-links">
-        <a href="${rootPath}index.html">Beranda</a><a href="${rootPath}index.html#mengenal">Kenali Pertumbuhan</a>
-        <a href="${rootPath}articles.html">Artikel Edukasi</a><a href="${rootPath}submit.html">Kirim Artikel</a>
+        <a href="${routes.home}">Beranda</a><a href="${routes.home}#mengenal">Kenali Pertumbuhan</a>
+        <a href="${routes.articles}">Artikel Edukasi</a><a href="${routes.submit}">Kirim Artikel</a>
       </div></div>
       <div><h4>Tentang TUMBUH</h4><p>Teman tumbuh kembang anak usia 0–60 bulan.</p>
         <p>Materi edukasi bukan pengganti konsultasi tenaga kesehatan.</p></div>
     </div><div class="footer-bottom"><span>© 2026 TUMBUH. Versi pratinjau frontend.</span>
       <span>Dibuat dengan perhatian untuk perjalanan tumbuh anak.</span></div></div>
   </footer>`;
+}
+
+function sectionNavigation() {
+  const findTarget = (hash) => {
+    try {
+      return hash
+        ? document.getElementById(decodeURIComponent(hash.slice(1)))
+        : null;
+    } catch {
+      return null;
+    }
+  };
+  const scrollTo = (target, behavior) => {
+    target.scrollIntoView({ behavior, block: "start" });
+    // Fokus keyboard mengikuti tujuan tanpa menambahkan fragmen ke URL.
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    target.focus({ preventScroll: true });
+    history.replaceState(
+      history.state,
+      "",
+      location.pathname + location.search,
+    );
+  };
+  document.addEventListener("click", (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const link = event.target.closest?.("a[href]");
+    if (
+      !link ||
+      link.hasAttribute("download") ||
+      (link.target && link.target !== "_self")
+    )
+      return;
+    const destination = new URL(link.href);
+    if (
+      destination.origin !== location.origin ||
+      destination.pathname !== location.pathname ||
+      destination.search !== location.search
+    )
+      return;
+    const target = findTarget(destination.hash);
+    if (!target) return;
+    event.preventDefault();
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    scrollTo(target, reducedMotion ? "instant" : "smooth");
+  });
+
+  // Tautan dari halaman lain tetap membawa tujuan scroll; hapus fragmen setelah tiba.
+  const target = findTarget(location.hash);
+  if (!target) return;
+  let done = false;
+  const reveal = () => {
+    if (done) return;
+    done = true;
+    requestAnimationFrame(() => scrollTo(target, "instant"));
+  };
+  if (document.documentElement.matches(".tumbuh-is-loading, .tumbuh-preload")) {
+    document.addEventListener("tumbuh:loader-dismissed", reveal, {
+      once: true,
+    });
+    window.setTimeout(reveal, 6000);
+  } else reveal();
 }
 
 // Artikel contoh lama dipertahankan dan dibagikan ke penyimpanan demo admin.
@@ -141,7 +236,7 @@ function cards() {
   const escape = store.escapeHtml;
   const articles = store.published();
   const url = (article) =>
-    `${rootPath}article.html?id=${encodeURIComponent(article.id)}`;
+    `${routes.article}?id=${encodeURIComponent(article.id)}`;
   const card = (article) => `<article class="article-card">
     <a href="${url(article)}"><img src="${escape(store.imageSrc(article))}" alt="${escape(article.title)}" loading="lazy"></a>
     <div class="article-body"><h3><a href="${url(article)}">${escape(article.title)}</a></h3>
@@ -176,7 +271,7 @@ function cards() {
     document.getElementById("article-hero-meta").textContent = "";
     document.querySelector(".article-cover-banner").hidden = true;
     document.querySelector(".article-latest").hidden = true;
-    detail.innerHTML = `<a class="btn" href="${rootPath}articles.html">Kembali ke daftar artikel ↗</a>`;
+    detail.innerHTML = `<a class="btn" href="${routes.articles}">Kembali ke daftar artikel ↗</a>`;
     return;
   }
   document.title = `${article.title} — TUMBUH`;
@@ -298,7 +393,7 @@ function growthForm() {
       sessionStorage.setItem(GROWTH_SESSION_KEY, JSON.stringify(input));
       if (window.TumbuhLoader)
         await window.TumbuhLoader.run("prediction", () => Promise.resolve());
-      location.href = "results.html?preview=1";
+      location.href = `${routes.results}?preview=1`;
     } catch {
       message.hidden = false;
       message.textContent =
@@ -396,6 +491,7 @@ function editor() {
 document.addEventListener("DOMContentLoaded", () => {
   header();
   footer();
+  sectionNavigation();
   cards();
   growthForm();
   growthResults();

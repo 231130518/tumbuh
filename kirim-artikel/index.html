@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <script src="../js/loading.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kirim Artikel — TUMBUH</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body data-page="submit">
+    <div id="site-header"></div>
+    <main>
+      <section class="page-hero">
+        <div class="wrap">
+          <span class="eyebrow light">CERITA BAIK UNTUK SEMUA</span>
+          <h1>Bagikan pengetahuan,<br />sebarkan manfaat.</h1>
+          <p>
+            Ceritakan pengalaman dan pengetahuanmu tentang kesehatan serta
+            pertumbuhan anak.
+          </p>
+        </div>
+      </section>
+      <section class="inner-page">
+        <div class="wrap">
+          <div class="form-page">
+            <form class="form-card" id="submit-article">
+              <h3>Tulis artikelmu</h3>
+              <p class="body-muted" id="article-form-intro">
+                Isi informasi di bawah dengan lengkap. Artikel akan ditinjau
+                admin sebelum dipublikasikan.
+              </p>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="author">Nama penulis *</label
+                  ><input
+                    id="author"
+                    name="author"
+                    placeholder="Nama lengkap"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="email">Alamat email (opsional)</label
+                  ><input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="nama@email.com"
+                  />
+                </div>
+                <div class="field full">
+                  <label for="title">Judul artikel *</label
+                  ><input
+                    id="title"
+                    name="title"
+                    maxlength="150"
+                    placeholder="Judul yang menarik dan informatif"
+                    required
+                  />
+                </div>
+                <div class="field full">
+                  <label for="subtitle">Subjudul *</label
+                  ><textarea
+                    id="subtitle"
+                    name="subtitle"
+                    rows="2"
+                    minlength="12"
+                    placeholder="Ringkasan singkat tentang isi artikel"
+                    required
+                    class="article-subtitle-input"
+                  ></textarea>
+                </div>
+                <div class="field full">
+                  <label>Isi artikel *</label>
+                  <div class="editor-tools" aria-label="Format isi artikel">
+                    <button
+                      type="button"
+                      data-editor-action="bold"
+                      title="Tebal"
+                    >
+                      B</button
+                    ><button
+                      type="button"
+                      data-editor-action="italic"
+                      title="Miring"
+                    >
+                      <em>I</em></button
+                    ><button
+                      type="button"
+                      data-editor-action="formatBlock"
+                      data-editor-value="h2"
+                    >
+                      H2</button
+                    ><button
+                      type="button"
+                      data-editor-action="formatBlock"
+                      data-editor-value="h3"
+                    >
+                      H3</button
+                    ><button
+                      type="button"
+                      data-editor-action="insertUnorderedList"
+                    >
+                      • Daftar</button
+                    ><button
+                      type="button"
+                      data-editor-action="insertOrderedList"
+                    >
+                      1. Daftar</button
+                    ><button
+                      type="button"
+                      data-editor-action="formatBlock"
+                      data-editor-value="p"
+                    >
+                      Paragraf</button
+                    ><button type="button" data-editor-action="createLink">
+                      Tautan</button
+                    ><button type="button" data-editor-action="unlink">
+                      Hapus tautan
+                    </button>
+                  </div>
+                  <div
+                    class="editor"
+                    id="content-editor"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-label="Isi artikel"
+                    aria-multiline="true"
+                    data-placeholder="Tulis artikelmu di sini..."
+                  ></div>
+                </div>
+                <div class="field full">
+                  <label for="cover-file"
+                    >Gambar sampul (wajib, tepat satu) *</label
+                  ><label class="upload-zone" for="cover-file"
+                    ><strong>↑ Unggah satu gambar artikel</strong
+                    ><span id="cover-help"
+                      >JPG / PNG / WEBP, maksimal 8 MB — unggah tepat satu
+                      gambar utama.</span
+                    ><input
+                      type="file"
+                      id="cover-file"
+                      name="cover"
+                      accept="image/png,image/jpeg,image/webp"
+                      required /><img
+                      id="cover-preview"
+                      alt="Pratinjau gambar sampul"
+                      hidden
+                  /></label>
+                </div>
+              </div>
+              <div class="article-form-actions">
+                <button class="btn" type="submit" id="submit-article-button">
+                  Kirim Artikel untuk Ditinjau ↗</button
+                ><button
+                  class="btn outline"
+                  type="submit"
+                  name="action"
+                  value="draft"
+                >
+                  Simpan Draf
+                </button>
+              </div>
+              <a
+                id="article-edit-back"
+                class="article-edit-back"
+                href="../admin/peninjauan/"
+                hidden
+                >← Kembali tanpa menyimpan</a
+              >
+              <div
+                class="notice"
+                id="submit-message"
+                hidden
+                role="status"
+              ></div>
+            </form>
+            <aside class="helper-card">
+              <span class="eyebrow">SEBELUM MENGIRIM</span>
+              <h3>Sedikit panduan untuk tulisanmu</h3>
+              <ul>
+                <li>Gunakan bahasa yang ramah dan mudah dipahami.</li>
+                <li>Pastikan judul dan subjudul menggambarkan isi artikel.</li>
+                <li>Unggah tepat satu gambar yang relevan.</li>
+                <li>Admin akan meninjau artikel sebelum diterbitkan.</li>
+              </ul>
+              <p class="footer-note">
+                Versi pratinjau: artikel disimpan secara lokal di browser ini,
+                belum dikirim ke server atau database.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div id="site-footer"></div>
+    <script src="../js/main.js" defer></script>
+    <script src="../js/review.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
+      defer
+    ></script>
+    <script src="../js/aos-tumbuh.js" defer></script>
+  </body>
+</html>

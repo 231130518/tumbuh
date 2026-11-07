@@ -4,6 +4,7 @@
 */
 (() => {
   "use strict";
+  const routes = window.TumbuhRoutes;
   const STORAGE_KEY = "tumbuh-frontend-articles-v1";
   const STATUS = {
     pending: { label: "Menunggu tinjauan", css: "pending" },
@@ -306,7 +307,7 @@
           <p>${escapeHtml(a.author)} · ${escapeHtml(a.date)}</p>
           <p>${escapeHtml(a.subtitle)}</p>
         </div>
-        <a class="review-action" href="preview.html?id=${encodeURIComponent(a.id)}">Tinjau artikel lengkap ↗</a>
+        <a class="review-action" href="${routes.preview}?id=${encodeURIComponent(a.id)}">Tinjau artikel lengkap ↗</a>
       </article>`,
         )
         .join("");
@@ -359,7 +360,8 @@
           : "Terbitkan Artikel ↗";
       $("reject-article").hidden = article.status !== "pending";
       $("draft-article").hidden = article.status === "draft";
-      $("edit-article").href = `../submit.html?edit=${encodeURIComponent(id)}`;
+      $("edit-article").href =
+        `${routes.submit}?edit=${encodeURIComponent(id)}`;
       wrap.hidden = false;
     }
     function decide(status) {
@@ -408,7 +410,7 @@
         return;
       try {
         deleteArticle(id);
-        location.href = "dashboard.html";
+        location.href = routes.dashboard;
       } catch {
         alert("Artikel belum berhasil dihapus dari penyimpanan browser.");
       }
@@ -484,7 +486,7 @@
         "Simpan Perubahan ↗";
       document.getElementById("article-edit-back").hidden = false;
       document.getElementById("article-edit-back").href =
-        `admin/preview.html?id=${encodeURIComponent(editId)}`;
+        `${routes.preview}?id=${encodeURIComponent(editId)}`;
       document.getElementById("article-form-intro").textContent =
         "Perubahan tersimpan pada demo browser ini. Status artikel dipertahankan saat memilih Simpan Perubahan.";
       for (const key of ["author", "email", "title", "subtitle"])
@@ -563,14 +565,14 @@
         };
         saveLocalArticle(article);
         if (existing) {
-          location.href = `admin/preview.html?id=${encodeURIComponent(article.id)}`;
+          location.href = `${routes.preview}?id=${encodeURIComponent(article.id)}`;
           return;
         }
         form.reset();
         body.innerHTML = "";
         document.getElementById("cover-preview").hidden = true;
         document.getElementById("cover-preview").removeAttribute("src");
-        note.innerHTML = `<strong>${status === "draft" ? "Draf tersimpan!" : "Artikel menunggu tinjauan!"}</strong> Data tersimpan di browser ini, belum dikirim ke server. <a href="admin/preview.html?id=${encodeURIComponent(article.id)}">Lihat artikel lengkap ↗</a>`;
+        note.innerHTML = `<strong>${status === "draft" ? "Draf tersimpan!" : "Artikel menunggu tinjauan!"}</strong> Data tersimpan di browser ini, belum dikirim ke server. <a href="${routes.preview}?id=${encodeURIComponent(article.id)}">Lihat artikel lengkap ↗</a>`;
       } catch (error) {
         note.textContent = `Belum berhasil menyimpan: ${error.message || "Penyimpanan browser tidak tersedia."}`;
       } finally {

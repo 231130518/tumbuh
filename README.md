@@ -10,20 +10,37 @@ Buka folder ini melalui Live Server di VS Code, atau jalankan:
 python3 -m http.server 8000
 ```
 
-Buka `http://localhost:8000/index.html`. Gunakan alamat dan port yang sama selama menguji alur artikel karena penyimpanan browser terikat pada asal situs.
+Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji alur artikel karena penyimpanan browser terikat pada asal situs.
 
 ## Halaman dan kode
 
 - `index.html`: beranda dan form pemeriksaan.
-- `results.html`: data anak dan tiga kartu hasil; belum ada klasifikasi DNN.
-- `articles.html`, `article.html`: daftar, pencarian, dan isi artikel yang terbit pada demo.
-- `submit.html`: kirim artikel dan simpan draf; `?edit=ID` untuk mengedit artikel demo.
-- `admin/dashboard.html`, `admin/preview.html`: peninjauan lengkap, edit, draf, terbit, tolak, dan hapus.
-- `admin/login.html`: tampilan login saja, bukan autentikasi atau pelindung halaman admin.
+- `hasil-pemeriksaan/index.html`: data anak dan tiga kartu hasil; belum ada klasifikasi DNN.
+- `artikel/index.html`, `artikel/baca/index.html`: daftar, pencarian, dan isi artikel yang terbit pada demo.
+- `kirim-artikel/index.html`: kirim artikel dan simpan draf; `?edit=ID` untuk mengedit artikel demo.
+- `admin/peninjauan/index.html`, `admin/pratinjau/index.html`: peninjauan lengkap, edit, draf, terbit, tolak, dan hapus.
+- `admin/login/index.html`: tampilan login saja, bukan autentikasi atau pelindung halaman admin.
 - `js/main.js`: navigasi, tampilan publik, form pemeriksaan, ringkasan hasil, dan editor.
 - `js/review.js`: satu sumber data artikel demo, validasi gambar, sanitasi isi, dan tindakan admin.
 - `js/loading.js`, `js/aos-tumbuh.js`: loading dan animasi konten.
 - `css/style.css`: tampilan responsif dan animasi.
+
+## URL halaman
+
+| Halaman              | URL                                              |
+| -------------------- | ------------------------------------------------ |
+| Beranda              | `/`                                              |
+| Daftar artikel       | `/artikel/`                                      |
+| Isi artikel          | `/artikel/baca/?id=ID`                           |
+| Kirim / edit artikel | `/kirim-artikel/` atau `/kirim-artikel/?edit=ID` |
+| Hasil pemeriksaan    | `/hasil-pemeriksaan/`                            |
+| Login admin          | `/admin/login/`                                  |
+| Peninjauan artikel   | `/admin/peninjauan/`                             |
+| Pratinjau admin      | `/admin/pratinjau/?id=ID`                        |
+
+Setiap URL folder memiliki `index.html` sendiri, sehingga bisa dibuka langsung dan di-refresh pada hosting statis. File `.html` lama menjadi pengalih melalui `js/redirect.js`, dengan query dan tujuan scroll tetap diteruskan. Ubah isi halaman pada file dalam folder baru, bukan pada file pengalih lama.
+
+Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript menggulir ke tujuan dan membersihkan hash dari address bar. ID artikel tetap memakai query untuk memilih konten demo. Jalur aset dan navigasi mendukung domain sendiri maupun alamat proyek `/tumbuh/`, tanpa perubahan DNS atau framework.
 
 ## Batas demo
 
