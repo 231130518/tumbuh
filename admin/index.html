@@ -4,7 +4,8 @@
     <script src="../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Peninjauan Artikel — TUMBUH (Pratinjau)</title>
+    <meta name="robots" content="noindex" />
+    <title>Login Admin — TUMBUH</title>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
@@ -13,76 +14,41 @@
     <link rel="icon" type="image/png" href="../assets/logo-tumbuh.png?v=20261108" />
     <link rel="apple-touch-icon" href="../assets/logo-tumbuh.png?v=20261108" />
   </head>
-  <body data-page="admin-review">
-    <header class="admin-nav">
-      <div class="wrap admin-nav-inner">
-        <a href="../" class="brand"
-          ><img
-            class="brand-logo"
-            src="../assets/logo-tumbuh.png"
-            alt=""
-          />tumbuh.</a
-        >
-        <nav aria-label="Navigasi admin">
-          <a href="../">Beranda</a
-          ><a href="../artikel/">Artikel Edukasi</a
-          ><a class="active" href="./">Peninjauan Artikel</a>
-        </nav>
-        <span class="admin-pill">Admin <span>●</span></span>
+  <body data-page="admin-login">
+    <div id="site-header"></div>
+    <main class="section login-page">
+      <div class="form-card login-card">
+        <span class="eyebrow">RUANG ADMIN</span>
+        <h3>Selamat datang kembali.</h3>
+        <p class="body-muted">Halaman login admin — pratinjau tampilan.</p>
+        <div class="field">
+          <label for="admin-username">Username</label
+          ><input
+            id="admin-username"
+            placeholder="Username admin"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field login-password">
+          <label for="admin-password">Password</label
+          ><input
+            id="admin-password"
+            type="password"
+            placeholder="Password admin"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="btn" type="button" id="admin-login-preview">
+          Masuk ke Dashboard ↗
+        </button>
+        <div class="notice" id="login-note" hidden>
+          Mode pratinjau: autentikasi belum terhubung. Untuk melihat desain
+          dashboard,
+          <a href="peninjauan/" class="text-link">buka pratinjau dashboard</a
+          >.
+        </div>
       </div>
-    </header>
-    <main>
-      <section class="admin-review-hero">
-        <div class="wrap">
-          <span class="hero-label">AREA PENGELOLA ARTIKEL</span>
-          <h1>Peninjauan artikel<br /><em>lebih sederhana.</em></h1>
-          <p>
-            Tinjau dan kelola artikel yang dikirimkan masyarakat sebelum
-            diterbitkan.
-          </p>
-        </div>
-        <span class="admin-hero-ring" aria-hidden="true"></span>
-      </section>
-      <section class="review-content">
-        <div class="wrap">
-          <div class="review-head">
-            <div>
-              <span class="eyebrow">RUANG PENINJAUAN</span>
-              <h2>Artikel yang perlu<br />perhatian Anda.</h2>
-              <p>
-                Pilih artikel untuk melihat isi dan memutuskan apakah artikel
-                layak diterbitkan.
-              </p>
-            </div>
-            <span class="demo-badge">Pratinjau UI — tanpa database</span>
-          </div>
-          <div class="review-tabs" role="group" aria-label="Filter artikel">
-            <button class="active" data-filter="semua">Semua artikel</button
-            ><button data-filter="pending">
-              Menunggu tinjauan <span id="pending-count">2</span></button
-            ><button data-filter="published">Terbit</button
-            ><button data-filter="draft">Draf</button
-            ><button data-filter="rejected">Ditolak</button>
-          </div>
-          <div class="review-list" id="review-list">
-            <p class="body-muted">Memuat artikel untuk peninjauan...</p>
-          </div>
-          <div class="review-empty" id="review-empty" hidden>
-            Belum ada artikel dalam status ini.
-          </div>
-        </div>
-      </section>
-      <section class="admin-tail">
-        <div class="wrap">
-          <h2>Setiap cerita layak<br />mendapat perhatian.</h2>
-          <p>
-            Pastikan tulisan yang dibagikan informatif dan bermanfaat bagi orang
-            tua.
-          </p>
-        </div>
-      </section>
     </main>
-    <div id="site-footer"></div>
     <script src="../js/main.js" defer></script>
     <script src="../js/review.js" defer></script>
     <script

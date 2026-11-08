@@ -40,8 +40,8 @@ const routes = {
   article: `${rootPath}artikel/baca/`,
   submit: `${rootPath}kirim-artikel/`,
   results: `${rootPath}hasil-pemeriksaan/`,
-  login: `${rootPath}admin/login/`,
-  dashboard: `${rootPath}admin/`,
+  login: `${rootPath}admin/`,
+  dashboard: `${rootPath}admin/peninjauan/`,
   preview: `${rootPath}admin/pratinjau/`,
 };
 window.TumbuhRoutes = routes;
