@@ -1,18 +1,60 @@
 <!doctype html>
 <html lang="id">
   <head>
+    <script src="../../js/loading.js"></script>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Halaman dipindahkan — TUMBUH</title>
-    <script src="../../js/redirect.js" defer></script>
+    <title>Login Admin — TUMBUH</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+    />
+    <link rel="stylesheet" href="../../css/style.css" />
     <link rel="icon" type="image/png" href="../../assets/logo-tumbuh.png?v=20261108" />
     <link rel="apple-touch-icon" href="../../assets/logo-tumbuh.png?v=20261108" />
   </head>
-  <body>
-    <p>
-      Halaman ini memiliki alamat baru.
-      <a id="redirect-link" href="../">Lanjut ke halaman TUMBUH</a>.
-    </p>
+  <body data-page="admin-login">
+    <div id="site-header"></div>
+    <main class="section login-page">
+      <div class="form-card login-card">
+        <span class="eyebrow">RUANG ADMIN</span>
+        <h3>Selamat datang kembali.</h3>
+        <p class="body-muted">Halaman login admin — pratinjau tampilan.</p>
+        <div class="field">
+          <label for="admin-username">Username</label
+          ><input
+            id="admin-username"
+            placeholder="Username admin"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field login-password">
+          <label for="admin-password">Password</label
+          ><input
+            id="admin-password"
+            type="password"
+            placeholder="Password admin"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="btn" type="button" id="admin-login-preview">
+          Masuk ke Dashboard ↗
+        </button>
+        <div class="notice" id="login-note" hidden>
+          Mode pratinjau: autentikasi belum terhubung. Untuk melihat desain
+          dashboard,
+          <a href="../" class="text-link">buka pratinjau dashboard</a
+          >.
+        </div>
+      </div>
+    </main>
+    <script src="../../js/main.js" defer></script>
+    <script src="../../js/review.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
+      defer
+    ></script>
+    <script src="../../js/aos-tumbuh.js" defer></script>
   </body>
 </html>

@@ -18,8 +18,8 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 - `hasil-pemeriksaan/index.html`: data anak dan tiga kartu hasil; belum ada klasifikasi DNN.
 - `artikel/index.html`, `artikel/baca/index.html`: daftar, pencarian, dan isi artikel yang terbit pada demo.
 - `kirim-artikel/index.html`: kirim artikel dan simpan draf; `?edit=ID` untuk mengedit artikel demo.
-- `admin/peninjauan/index.html`, `admin/pratinjau/index.html`: peninjauan lengkap, edit, draf, terbit, tolak, dan hapus.
-- `admin/index.html`: tampilan login saja, bukan autentikasi atau pelindung halaman admin.
+- `admin/index.html`, `admin/pratinjau/index.html`: peninjauan lengkap, edit, draf, terbit, tolak, dan hapus.
+- `admin/login/index.html`: tampilan login saja, bukan autentikasi atau pelindung halaman admin.
 - `js/main.js`: navigasi, tampilan publik, form pemeriksaan, ringkasan hasil, dan editor.
 - `js/review.js`: satu sumber data artikel demo, validasi gambar, sanitasi isi, dan tindakan admin.
 - `js/loading.js`, `js/aos-tumbuh.js`: loading dan animasi konten.
@@ -34,11 +34,11 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 | Isi artikel          | `/artikel/baca/?id=ID`                           |
 | Kirim / edit artikel | `/kirim-artikel/` atau `/kirim-artikel/?edit=ID` |
 | Hasil pemeriksaan    | `/hasil-pemeriksaan/`                            |
-| Login admin          | `/admin/`                                  |
-| Peninjauan artikel   | `/admin/peninjauan/`                             |
+| Login admin          | `/admin/login/`                                  |
+| Peninjauan artikel   | `/admin/`                             |
 | Pratinjau admin      | `/admin/pratinjau/?id=ID`                        |
 
-Alamat `/admin` membuka halaman login; alamat lama `/admin/login/` tetap dialihkan ke sana. Akses admin masih berupa demo tanpa autentikasi server.
+Alamat `/admin` membuka dashboard peninjauan; alamat lama `/admin/peninjauan/` dan `/admin/dashboard.html` dialihkan ke `/admin/`. Tampilan login tetap tersedia di `/admin/login/`. Akses admin masih berupa demo tanpa autentikasi server.
 
 Setiap URL folder memiliki `index.html` sendiri, sehingga bisa dibuka langsung dan di-refresh pada hosting statis. File `.html` lama menjadi pengalih melalui `js/redirect.js`, dengan query dan tujuan scroll tetap diteruskan. Ubah isi halaman pada file dalam folder baru, bukan pada file pengalih lama.
 
