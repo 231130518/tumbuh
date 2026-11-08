@@ -40,7 +40,7 @@ const routes = {
   article: `${rootPath}artikel/baca/`,
   submit: `${rootPath}kirim-artikel/`,
   results: `${rootPath}hasil-pemeriksaan/`,
-  login: `${rootPath}admin/login/`,
+  login: `${rootPath}admin/`,
   dashboard: `${rootPath}admin/peninjauan/`,
   preview: `${rootPath}admin/pratinjau/`,
 };
