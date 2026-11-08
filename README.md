@@ -54,4 +54,4 @@ Desain utama: [Figma Draft 4](https://www.figma.com/design/167KzjdOtNG2fEY8wGrC0
 
 Artikel tidak memiliki kategori. Gambar utama wajib tepat satu. Aset asli dipertahankan, termasuk SVG scroll-down. Font Inter disediakan lokal beserta lisensinya. AOS memakai fade-up 20 px, 740 ms, `cubic-bezier(.22,1,.36,1)`, sekali tampil; footer statis. Prioritas saat ini menyelesaikan UI sebelum integrasi backend dan DNN.
 
-GitHub Pages memakai `.github/workflows/static.yml` untuk deploy situs statis saat push ke `main`.
+GitHub Pages memakai **Deploy from a branch**, dengan sumber `main` dan folder `/ (root)`, untuk publikasi otomatis saat push. Domain `www.ayotumbuh.my.id` dipertahankan melalui file `CNAME`. Workflow `.github/workflows/static.yml` hanya menjadi cadangan manual jika sumber Pages diubah kembali ke GitHub Actions.
