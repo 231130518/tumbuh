@@ -4,6 +4,7 @@
     <script src="../../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
     <title>Pratinjau Artikel Lengkap — Admin TUMBUH</title>
     <link
       rel="stylesheet"
@@ -28,10 +29,20 @@
           ><a href="../../artikel/">Artikel Edukasi</a>
           <a class="active" href="../peninjauan/">Peninjauan Artikel</a>
         </nav>
-        <span class="admin-pill">Admin <span>●</span></span>
+        <div class="admin-session-actions">
+          <span class="admin-pill">Admin <span>●</span></span>
+          <button type="button" class="btn outline admin-logout" data-admin-logout hidden>Logout</button>
+        </div>
       </div>
     </header>
-    <main>
+    <section class="wrap admin-access" id="admin-access" aria-live="polite">
+      <h1>Akses admin</h1>
+      <p id="admin-access-message" role="status">Memeriksa sesi dan akses admin…</p>
+      <button class="btn outline" type="button" id="admin-access-retry" hidden>Coba lagi</button>
+      <a class="text-link" href="../">Ke halaman login</a>
+      <noscript><p>Aktifkan JavaScript untuk masuk dan mengakses artikel.</p></noscript>
+    </section>
+    <main id="admin-content" hidden inert>
       <section class="admin-preview-intro">
         <div class="wrap admin-preview-intro-inner">
           <div>
@@ -43,15 +54,19 @@
             </p>
             <p id="preview-email" hidden></p>
             <span id="preview-status" class="review-status pending"
-              >● Menunggu tinjauan</span
+              ></span
             >
             <span class="demo-badge"
-              >Demo lokal — belum terhubung database</span
+              >Peninjauan artikel</span
             >
           </div>
           <a class="btn" href="../peninjauan/">← Kembali ke Peninjauan</a>
         </div>
       </section>
+      <div class="wrap admin-preview-load">
+        <p id="preview-load-message" role="status"></p>
+        <button class="btn outline" id="preview-reload" type="button">Muat ulang artikel</button>
+      </div>
       <div id="admin-preview-article" hidden>
         <section class="admin-preview-hero">
           <div class="wrap admin-preview-hero-inner">
@@ -110,18 +125,13 @@
               <span class="eyebrow">SELESAI MEMBACA?</span>
               <h2>Ambil keputusan setelah membaca seluruh artikel.</h2>
               <p id="review-decision-note">
-                Artikel yang diterbitkan tampil di halaman publik pada browser
-                ini. Perubahan belum dikirim ke server.
+                Keputusan akan memperbarui status artikel. Pengeditan, draf,
+                dan penghapusan belum tersedia.
               </p>
             </div>
             <div class="admin-preview-buttons" id="preview-action-buttons">
-              <a
-                class="btn outline"
-                id="edit-article"
-                href="../../kirim-artikel/"
-                >Edit Artikel</a
-              >
-              <button class="btn outline" type="button" id="draft-article">
+              <button class="btn outline" type="button" id="edit-article" disabled title="Pengeditan belum tersedia">Edit Artikel</button>
+              <button class="btn outline" type="button" id="draft-article" disabled title="Fitur draf belum tersedia">
                 Simpan Draf
               </button>
               <button class="btn mint" type="button" id="approve-article">
@@ -130,7 +140,7 @@
               <button class="btn outline" type="button" id="reject-article">
                 ✕ Tolak Artikel
               </button>
-              <button class="btn danger" type="button" id="delete-article">
+              <button class="btn danger" type="button" id="delete-article" disabled title="Penghapusan belum tersedia">
                 Hapus Artikel
               </button>
             </div>
@@ -150,14 +160,19 @@
       >
         <h2>Artikel tidak ditemukan.</h2>
         <p>
-          Artikel yang kamu pilih tidak tersedia dalam pratinjau browser ini.
+          Artikel tidak tersedia atau tidak dapat diakses oleh akun ini.
         </p>
         <a class="btn" href="../peninjauan/">Kembali ke Peninjauan ↗</a>
       </section>
     </main>
     <div id="site-footer"></div>
     <script src="../../js/main.js" defer></script>
-    <script src="../../js/review.js" defer></script>
+    <script src="../../js/vendor/supabase-2.119.0.js" defer></script>
+    <script src="../../js/vendor/purify-3.4.17.min.js" defer></script>
+    <script src="../../js/supabase-config.js" defer></script>
+    <script src="../../js/supabase-client.js" defer></script>
+    <script src="../../js/admin-articles.js" defer></script>
+    <script src="../../js/admin.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
       defer

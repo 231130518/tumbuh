@@ -1,0 +1,10 @@
+{
+  "name": "tumbuh-static",
+  "private": true,
+  "scripts": {
+    "test:admin": "node tests/admin-supabase.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

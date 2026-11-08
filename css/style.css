@@ -3990,3 +3990,25 @@ body[data-page="results"] .result-description {
 .login-card h3 {
   margin-top: 13px;
 }
+/* Kontrol Supabase admin; tata letak halaman publik tetap menggunakan aturan lama. */
+.admin-access {
+  min-height: 45vh;
+  padding-top: 72px;
+  padding-bottom: 72px;
+}
+.admin-access .text-link { display: inline-block; margin: 20px; }
+.admin-session-actions { display: flex; align-items: center; gap: 14px; }
+.admin-logout { padding: 10px 16px; min-height: 40px; }
+.review-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 0; }
+.admin-preview-load { padding-top: 20px; padding-bottom: 20px; }
+.admin-preview-load:has(#preview-load-message:empty) { padding-top: 0; }
+body[data-page^="admin-"] button:disabled { cursor: not-allowed; opacity: .55; }
+body[data-page^="admin-"] .is-error { color: #a32b35; }
+body[data-page^="admin-"] .review-desc { min-width: 0; overflow-wrap: anywhere; }
+body[data-page^="admin-"] #preview-email { overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  .admin-session-actions { gap: 8px; }
+  .admin-session-actions .admin-pill { display: none; }
+  .review-pagination { flex-wrap: wrap; justify-content: center; }
+  .review-pagination span { width: 100%; text-align: center; order: -1; }
+}

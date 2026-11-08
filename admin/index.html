@@ -17,15 +17,18 @@
   <body data-page="admin-login">
     <div id="site-header"></div>
     <main class="section login-page">
-      <div class="form-card login-card">
+      <form class="form-card login-card" id="admin-login-form">
         <span class="eyebrow">RUANG ADMIN</span>
         <h3>Selamat datang kembali.</h3>
-        <p class="body-muted">Halaman login admin — pratinjau tampilan.</p>
+        <p class="body-muted">Masuk untuk meninjau dan mengelola artikel TUMBUH.</p>
         <div class="field">
-          <label for="admin-username">Username</label
+          <label for="admin-email">Email</label
           ><input
-            id="admin-username"
-            placeholder="Username admin"
+            id="admin-email"
+            name="email"
+            type="email"
+            required
+            placeholder="Email admin"
             autocomplete="username"
           />
         </div>
@@ -33,24 +36,25 @@
           <label for="admin-password">Password</label
           ><input
             id="admin-password"
+            name="password"
+            required
             type="password"
             placeholder="Password admin"
             autocomplete="current-password"
           />
         </div>
-        <button class="btn" type="button" id="admin-login-preview">
+        <button class="btn" type="submit" id="admin-login-submit" disabled>
           Masuk ke Dashboard ↗
         </button>
-        <div class="notice" id="login-note" hidden>
-          Mode pratinjau: autentikasi belum terhubung. Untuk melihat desain
-          dashboard,
-          <a href="peninjauan/" class="text-link">buka pratinjau dashboard</a
-          >.
-        </div>
-      </div>
+        <div class="notice" id="login-note" role="status" aria-live="polite" hidden></div>
+        <noscript><p class="notice">Aktifkan JavaScript untuk login admin.</p></noscript>
+      </form>
     </main>
     <script src="../js/main.js" defer></script>
-    <script src="../js/review.js" defer></script>
+    <script src="../js/vendor/supabase-2.119.0.js" defer></script>
+    <script src="../js/supabase-config.js" defer></script>
+    <script src="../js/supabase-client.js" defer></script>
+    <script src="../js/admin.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
       defer

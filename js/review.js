@@ -1,6 +1,5 @@
-/* TUMBUH — pratinjau artikel lengkap untuk DEMO frontend.
-   Tidak ada autentikasi backend, server, atau publikasi sungguhan.
-   Gunakan API dan database ketika tahap backend dimulai.
+/* Data demo halaman publik dan formulir lokal saja.
+   Admin sungguhan memakai admin.js + admin-articles.js dan Supabase.
 */
 (() => {
   "use strict";
@@ -169,7 +168,7 @@
     return root.innerHTML;
   }
 
-  // Satu sumber data untuk halaman publik dan admin; semua perubahan masih lokal.
+  // Sumber demo halaman publik saja; data admin tidak berasal dari sini.
   const seeds = [...(window.TumbuhSeedArticles || []), ...sampleArticles];
   const assetBase = new URL("../", document.currentScript.src);
   function readJson(key, fallback) {
@@ -241,24 +240,6 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
   }
-  function setDemoStatus(id, status) {
-    const article = all().find((a) => a.id === id);
-    if (!article || !STATUS[status]) return false;
-    saveLocalArticle({ ...article, status });
-    return true;
-  }
-  function deleteArticle(id) {
-    if (seeds.some((a) => a.id === id)) {
-      const overrides = readOverrides();
-      overrides[id] = { deleted: true };
-      localStorage.setItem(STORAGE_KEY + ":edits", JSON.stringify(overrides));
-    } else {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(readLocalArticles().filter((a) => a.id !== id)),
-      );
-    }
-  }
   function safeImageSrc(article) {
     if (article.cover.startsWith("data:image/jpeg;base64,"))
       return article.cover;
@@ -273,150 +254,6 @@
     sanitize: sanitizeArticleHtml,
     escapeHtml,
   };
-
-  function formatStatus(status) {
-    const entry = STATUS[status] || STATUS.pending;
-    return `<span class="review-status ${entry.css}">● ${escapeHtml(entry.label)}</span>`;
-  }
-
-  function setupDashboard() {
-    const list = document.getElementById("review-list");
-    if (!list) return;
-    const tabs = Array.from(document.querySelectorAll("[data-filter]"));
-    const empty = document.getElementById("review-empty");
-    let filter = "semua";
-    function render() {
-      const articles = all();
-      const count = document.getElementById("pending-count");
-      if (count)
-        count.textContent = String(
-          articles.filter((a) => a.status === "pending").length,
-        );
-      const visible =
-        filter === "semua"
-          ? articles
-          : articles.filter((a) => a.status === filter);
-      list.innerHTML = visible
-        .map(
-          (
-            a,
-          ) => `<article class="review-item" data-status="${escapeHtml(a.status)}">
-        <div class="review-thumb">${safeImageSrc(a) ? `<img src="${safeImageSrc(a)}" alt="Gambar sampul ${escapeHtml(a.title)}">` : ""}</div>
-        <div class="review-desc">${formatStatus(a.status)}
-          <h3>${escapeHtml(a.title)}</h3>
-          <p>${escapeHtml(a.author)} · ${escapeHtml(a.date)}</p>
-          <p>${escapeHtml(a.subtitle)}</p>
-        </div>
-        <a class="review-action" href="${routes.preview}?id=${encodeURIComponent(a.id)}">Tinjau artikel lengkap ↗</a>
-      </article>`,
-        )
-        .join("");
-      if (empty) empty.hidden = visible.length !== 0;
-    }
-    tabs.forEach((button) =>
-      button.addEventListener("click", () => {
-        filter = button.dataset.filter;
-        tabs.forEach((x) => x.classList.toggle("active", x === button));
-        render();
-      }),
-    );
-    render();
-  }
-
-  function setupPreview() {
-    const wrap = document.getElementById("admin-preview-article");
-    if (!wrap) return;
-    const id = new URLSearchParams(location.search).get("id") || "sample-gizi";
-    let article = all().find((a) => a.id === id);
-    const $ = (id) => document.getElementById(id);
-    if (!article) {
-      $("preview-not-found").hidden = false;
-      return;
-    }
-    function render() {
-      article = all().find((a) => a.id === id) || article;
-      document.title = `Tinjau: ${article.title} — TUMBUH`;
-      $("preview-title").textContent = article.title;
-      $("preview-subtitle").textContent = article.subtitle;
-      $("preview-meta").textContent =
-        `${article.date.toUpperCase()}   •   ${article.author.toUpperCase()}`;
-      $("preview-email").textContent = article.email
-        ? `Email penulis: ${article.email}`
-        : "";
-      $("preview-email").hidden = !article.email;
-      const source = safeImageSrc(article);
-      $("preview-cover").src = source;
-      $("preview-cover").alt = `Gambar utama artikel: ${article.title}`;
-      $("preview-cover").closest(".admin-preview-image").hidden = !source;
-      $("full-cover-img").src = source;
-      $("show-full-cover").hidden = !source;
-      $("preview-body").innerHTML = sanitizeArticleHtml(article.content);
-      $("preview-status").className = `review-status ${article.status}`;
-      $("preview-status").textContent = `● ${STATUS[article.status].label}`;
-      $("approve-article").hidden = article.status === "published";
-      $("approve-article").textContent =
-        article.status === "pending"
-          ? "✓ Setujui Artikel"
-          : "Terbitkan Artikel ↗";
-      $("reject-article").hidden = article.status !== "pending";
-      $("draft-article").hidden = article.status === "draft";
-      $("edit-article").href =
-        `${routes.submit}?edit=${encodeURIComponent(id)}`;
-      wrap.hidden = false;
-    }
-    function decide(status) {
-      const labels = {
-        published: "menerbitkan",
-        rejected: "menolak",
-        draft: "menyimpan sebagai draf",
-      };
-      if (
-        !window.confirm(
-          `Yakin ingin ${labels[status]} artikel ini? Perubahan hanya berlaku pada demo di browser ini.`,
-        )
-      )
-        return;
-      try {
-        if (!setDemoStatus(id, status))
-          throw new Error("Artikel tidak ditemukan");
-        $("preview-feedback").hidden = false;
-        $("preview-feedback").textContent =
-          status === "published"
-            ? "Artikel tampil di daftar publik pada browser ini. Belum diterbitkan ke server."
-            : `Status berubah menjadi ${STATUS[status].label}. Artikel tidak tampil di daftar publik.`;
-        render();
-      } catch {
-        alert("Perubahan belum tersimpan. Periksa ruang penyimpanan browser.");
-      }
-    }
-    $("show-full-cover").addEventListener("click", () =>
-      $("full-cover-dialog").showModal(),
-    );
-    $("close-full-cover").addEventListener("click", () =>
-      $("full-cover-dialog").close(),
-    );
-    $("full-cover-dialog").addEventListener("click", (e) => {
-      if (e.target === $("full-cover-dialog")) e.target.close();
-    });
-    $("approve-article").addEventListener("click", () => decide("published"));
-    $("reject-article").addEventListener("click", () => decide("rejected"));
-    $("draft-article").addEventListener("click", () => decide("draft"));
-    $("delete-article").addEventListener("click", () => {
-      if (
-        !window.confirm(
-          "Hapus artikel ini dari demo browser? Artikel yang dihapus tidak bisa dipulihkan dari halaman ini.",
-        )
-      )
-        return;
-      try {
-        deleteArticle(id);
-        location.href = routes.dashboard;
-      } catch {
-        alert("Artikel belum berhasil dihapus dari penyimpanan browser.");
-      }
-    });
-    render();
-  }
 
   function fileToJpegDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -565,14 +402,14 @@
         };
         saveLocalArticle(article);
         if (existing) {
-          location.href = `${routes.preview}?id=${encodeURIComponent(article.id)}`;
+          note.textContent = "Perubahan demo tersimpan di browser ini; tidak dikirim ke dashboard admin.";
           return;
         }
         form.reset();
         body.innerHTML = "";
         document.getElementById("cover-preview").hidden = true;
         document.getElementById("cover-preview").removeAttribute("src");
-        note.innerHTML = `<strong>${status === "draft" ? "Draf tersimpan!" : "Artikel menunggu tinjauan!"}</strong> Data tersimpan di browser ini, belum dikirim ke server. <a href="${routes.preview}?id=${encodeURIComponent(article.id)}">Lihat artikel lengkap ↗</a>`;
+        note.textContent = `${status === "draft" ? "Draf tersimpan!" : "Artikel demo tersimpan!"} Data hanya tersimpan di browser ini dan belum dikirim ke dashboard admin.`;
       } catch (error) {
         note.textContent = `Belum berhasil menyimpan: ${error.message || "Penyimpanan browser tidak tersedia."}`;
       } finally {
@@ -584,8 +421,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    setupDashboard();
-    setupPreview();
     setupSubmit();
   });
 })();

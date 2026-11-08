@@ -496,11 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
   growthForm();
   growthResults();
   editor();
-  document
-    .getElementById("admin-login-preview")
-    ?.addEventListener("click", () => {
-      document.getElementById("login-note").hidden = false;
-    });
+
 });
 // Sinkronkan daftar publik setelah status demo diubah dari tab lain.
 window.addEventListener("storage", (event) => {

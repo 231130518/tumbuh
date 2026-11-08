@@ -18,10 +18,13 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 - `hasil-pemeriksaan/index.html`: data anak dan tiga kartu hasil; belum ada klasifikasi DNN.
 - `artikel/index.html`, `artikel/baca/index.html`: daftar, pencarian, dan isi artikel yang terbit pada demo.
 - `kirim-artikel/index.html`: kirim artikel dan simpan draf; `?edit=ID` untuk mengedit artikel demo.
-- `admin/peninjauan/index.html`, `admin/pratinjau/index.html`: peninjauan lengkap, edit, draf, terbit, tolak, dan hapus.
-- `admin/index.html`: tampilan login saja, bukan autentikasi atau pelindung halaman admin.
+- `admin/peninjauan/index.html`, `admin/pratinjau/index.html`: dashboard dan pratinjau Supabase dengan verifikasi admin, publish/reject, dan Logout.
+- `admin/index.html`: login email/password Supabase; hanya UUID yang terdaftar pada `admin_users` dapat masuk.
 - `js/main.js`: navigasi, tampilan publik, form pemeriksaan, ringkasan hasil, dan editor.
-- `js/review.js`: satu sumber data artikel demo, validasi gambar, sanitasi isi, dan tindakan admin.
+- `js/review.js`: data demo halaman publik, validasi gambar, sanitasi isi, dan formulir lokal.
+- `js/supabase-config.js`, `js/supabase-client.js`: konfigurasi publik, SDK client, dan verifikasi pengguna/keanggotaan admin.
+- `js/admin.js`, `js/admin-articles.js`: sesi admin, guard halaman, query artikel Supabase, sanitasi DOMPurify, dan perubahan status.
+- `docs/supabase-admin.md`, `supabase/`: panduan integrasi, audit baca-saja, SQL opsional, dan pengujian otorisasi.
 - `js/loading.js`, `js/aos-tumbuh.js`: loading dan animasi konten.
 - `css/style.css`: tampilan responsif dan animasi.
 
@@ -38,17 +41,23 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 | Peninjauan artikel   | `/admin/peninjauan/`                             |
 | Pratinjau admin      | `/admin/pratinjau/?id=ID`                        |
 
-Alamat `/admin` membuka halaman login; alamat lama `/admin/login/` tetap dialihkan ke sana. Akses admin masih berupa demo tanpa autentikasi server.
+Alamat `/admin` membuka halaman login; alamat lama `/admin/login/` tetap dialihkan ke sana. Dashboard dan pratinjau memerlukan sesi Supabase terverifikasi serta keanggotaan `admin_users`. RLS tetap menjadi pengaman data di server.
 
 Setiap URL folder memiliki `index.html` sendiri, sehingga bisa dibuka langsung dan di-refresh pada hosting statis. File `.html` lama menjadi pengalih melalui `js/redirect.js`, dengan query dan tujuan scroll tetap diteruskan. Ubah isi halaman pada file dalam folder baru, bukan pada file pengalih lama.
 
-Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript menggulir ke tujuan dan membersihkan hash dari address bar. ID artikel tetap memakai query untuk memilih konten demo. Jalur aset dan navigasi mendukung domain sendiri maupun alamat proyek `/tumbuh/`, tanpa perubahan DNS atau framework.
+Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript menggulir ke tujuan dan membersihkan hash dari address bar. ID artikel tetap memakai query; pratinjau admin memilih ID database, halaman publik masih memilih ID demo. Jalur aset dan navigasi mendukung domain sendiri maupun alamat proyek `/tumbuh/`, tanpa perubahan DNS atau framework.
 
 ## Batas demo
 
 Data anak hanya disimpan sementara dalam `sessionStorage` dengan kunci `tumbuh-growth-input-v1`, bukan di database artikel. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan. Format usia untuk model perlu disesuaikan dengan preprocessing final nanti. Halaman hasil tanpa input menampilkan kondisi kosong. Status TB/U, BB/U, dan BB/TB selalu belum tersedia sampai model sungguhan terintegrasi.
 
-Artikel disimpan dalam `localStorage` dengan awalan `tumbuh-frontend-articles-v1`. Artikel baru berstatus `pending`, kecuali disimpan sebagai `draft`. Admin dapat menerbitkannya untuk ditampilkan di halaman publik pada browser yang sama. Status `pending`, `draft`, dan `rejected` tidak ditampilkan di halaman publik. Data ini tidak dikirim ke server atau disinkronkan antarperangkat. Akun admin, FastAPI, database, dataset, dan model belum disertakan.
+Halaman publik dan form pengiriman masih memakai `localStorage` dengan awalan `tumbuh-frontend-articles-v1`. Data demo tidak dikirim ke Supabase dan tidak muncul di dashboard sungguhan. Admin memakai tabel `articles`, dengan status `pending`, `published`, dan `rejected`; publikasi di database belum mengubah feed publik demo. Fitur edit/draf/hapus admin dinonaktifkan. Dataset dan model pertumbuhan belum diintegrasikan.
+
+## Konfigurasi admin Supabase
+
+Konfigurasi publik proyek `ayotumbuh` sudah diisi pada `js/supabase-config.js` (URL dasar, publishable key, dan `adminUserIdColumn: "user_id"`). Jangan menaruh secret/service_role key atau password database di frontend. Tidak ada tabel/akun/bucket/policy produksi yang dibuat ulang.
+
+Baca [panduan Supabase admin](docs/supabase-admin.md) untuk konfigurasi, audit RLS, sembilan pengujian manual, batas verifikasi, dan pekerjaan upload/form publik selanjutnya. Periksa RLS dengan akun non-admin asli sebelum publikasi. Pengujian otomatis: `npm install`, `npx playwright install chromium`, lalu `npm run test:admin`. Dependensi Node hanya untuk pengujian; situs tetap tanpa build/backend Node.
 
 ## Acuan yang dipertahankan
 
