@@ -252,11 +252,9 @@ function growthForm() {
         weight: Number(form.elements.weight.value),
         height: Number(form.elements.height.value),
       };
-      // Belum memanggil model: hanya menyimpan input untuk ringkasan hasil demo.
+      // Inferensi dijalankan di halaman hasil, tanpa mengirim data anak ke server.
       sessionStorage.setItem(GROWTH_SESSION_KEY, JSON.stringify(input));
-      if (window.TumbuhLoader)
-        await window.TumbuhLoader.run("prediction", () => Promise.resolve());
-      location.href = `${routes.results}?preview=1`;
+      location.href = routes.results;
     } catch {
       message.hidden = false;
       message.textContent =
@@ -266,9 +264,10 @@ function growthForm() {
     }
   });
 }
-function growthResults() {
+let growthRunning = false;
+async function growthResults() {
   const summary = document.getElementById("child-summary");
-  if (!summary) return;
+  if (!summary || growthRunning) return;
   const input = readGrowthInput();
   const empty = document.getElementById("results-empty");
   if (!input) {
@@ -288,6 +287,54 @@ function growthResults() {
     `${format(input.height)} cm`;
   document.getElementById("result-summary-note").textContent =
     "Data sesuai isian Anda. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan.";
+  empty.hidden = true;
+  const section = document.getElementById("growth-classification");
+  const message = document.getElementById("growth-result-message");
+  const retry = document.getElementById("growth-result-retry");
+  const cards = [...document.querySelectorAll("[data-growth-head]")];
+  growthRunning = true;
+  retry.hidden = true;
+  retry.disabled = true;
+  section.setAttribute("aria-busy", "true");
+  section.classList.remove("article-loaded");
+  message.setAttribute("role", "status");
+  message.textContent = "Memuat model dan menganalisis data pemeriksaan…";
+  for (const card of cards) {
+    const status = card.querySelector(".result-status");
+    status.textContent = "Memproses…";
+    status.classList.add("skeleton-block");
+    card.removeAttribute("data-result");
+    card.querySelector(".result-description").textContent = "Menunggu hasil analisis model.";
+  }
+  try {
+    const task = () => window.TumbuhGrowthModel.predict(input);
+    const prediction = window.TumbuhLoader && !window.TumbuhLoader.isRunning()
+      ? await window.TumbuhLoader.run("prediction", task, { minDurationMs: 350 })
+      : await task();
+    // Label asli dipertahankan agar makna kelas tidak diterjemahkan secara keliru.
+    for (const card of cards) {
+      const result = prediction.results[card.dataset.growthHead];
+      card.querySelector(".result-status").textContent = result.label;
+      card.dataset.result = ["Normal", "Not Stunted"].includes(result.label) ? "normal" : "review";
+      card.querySelector(".result-description").textContent =
+        "Kategori yang diperkirakan model berdasarkan data pemeriksaan. Konfirmasikan hasil dengan tenaga kesehatan.";
+    }
+    message.textContent = "Analisis selesai. Data pemeriksaan diproses di perangkat Anda.";
+  } catch (error) {
+    for (const card of cards) {
+      card.querySelector(".result-status").textContent = "Belum tersedia";
+      card.querySelector(".result-description").textContent = "Analisis belum berhasil. Tidak ada klasifikasi yang ditampilkan.";
+    }
+    message.setAttribute("role", "alert");
+    message.textContent = error.message || "Model belum dapat dijalankan. Coba lagi.";
+    retry.hidden = false;
+  } finally {
+    cards.forEach((card) => card.querySelector(".result-status").classList.remove("skeleton-block"));
+    section.removeAttribute("aria-busy");
+    section.classList.add("article-loaded");
+    retry.disabled = false;
+    growthRunning = false;
+  }
 }
 function editor() {
   const zone = document.getElementById("content-editor");
@@ -357,6 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
   sectionNavigation();
   growthForm();
   growthResults();
+  document.getElementById("growth-result-retry")?.addEventListener("click", growthResults);
   editor();
 
 });

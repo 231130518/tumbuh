@@ -1,0 +1,18 @@
+{
+    "Weight for Age": [
+        "Malnutrition",
+        "Normal",
+        "Overnutrition",
+        "Underfed"
+    ],
+    "Height for Age": [
+        "Not Stunted",
+        "Stunted"
+    ],
+    "Weight for Height": [
+        "Normal",
+        "Obese",
+        "Thin",
+        "Very Thin"
+    ]
+}

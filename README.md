@@ -15,12 +15,13 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 ## Halaman dan kode
 
 - `index.html`: beranda dan form pemeriksaan.
-- `hasil-pemeriksaan/index.html`: data anak dan tiga kartu hasil; belum ada klasifikasi DNN.
+- `hasil-pemeriksaan/index.html`: ringkasan data anak dan klasifikasi DNN untuk TB/U, BB/U, serta BB/TB.
 - `artikel/index.html`, `artikel/baca/index.html`: daftar, pencarian, dan isi artikel berstatus `published` dari Supabase.
 - `kirim-artikel/index.html`: pengiriman publik ke Supabase berstatus `pending`; draf teks tetap lokal.
 - `admin/peninjauan/index.html`, `admin/pratinjau/index.html`: dashboard dan pratinjau Supabase dengan verifikasi admin, publish/reject, dan Logout.
 - `admin/index.html`: login email/password Supabase; hanya UUID yang terdaftar pada `admin_users` dapat masuk.
-- `js/main.js`: navigasi, tampilan publik, form pemeriksaan, ringkasan hasil, dan editor.
+- `js/main.js`: navigasi, form pemeriksaan, hasil klasifikasi, dan editor.
+- `js/growth-model.js`, `model/browser-model.json`, `model/weights-*.bin`: inferensi model Keras di browser; preprocessing dan pembaruan model dijelaskan di [panduan model](model/README.md).
 - `js/public-articles.js`: beranda, pencarian, pagination, dan detail artikel Supabase tanpa email penulis.
 - `js/article-loading.js`: skeleton shimmer bersama untuk artikel publik dan admin, fade-in saat respons selesai, serta dukungan reduced motion.
 - `js/article-submit.js`, `js/article-content.js`: pengiriman ke Storage/`articles`, draf lokal, dan sanitasi bersama.
@@ -51,9 +52,9 @@ Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript me
 
 ## Status fitur
 
-Data anak hanya disimpan sementara dalam `sessionStorage` dengan kunci `tumbuh-growth-input-v1`, bukan di database artikel. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan. Format usia untuk model perlu disesuaikan dengan preprocessing final nanti. Halaman hasil tanpa input menampilkan kondisi kosong. Status TB/U, BB/U, dan BB/TB selalu belum tersedia sampai model sungguhan terintegrasi.
+Data anak hanya disimpan sementara dalam `sessionStorage` dengan kunci `tumbuh-growth-input-v1`, bukan di database artikel. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan. Model memakai urutan Gender, usia dalam bulan penuh, berat dalam kg, dan tinggi dalam cm. Pemetaan Gender dan StandardScaler mengikuti notebook pelatihan. Inferensi berlangsung di browser tanpa mengirim data anak ke server. Halaman tanpa input menampilkan kondisi kosong; kegagalan memuat model tidak menghasilkan klasifikasi pengganti.
 
-Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Fitur edit/draf admin dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin. Dataset dan model pertumbuhan belum diintegrasikan.
+Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Fitur edit/draf admin dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin. Model pertumbuhan sudah terhubung; dataset pelatihan tidak diperlukan saat website berjalan.
 
 ## Konfigurasi admin Supabase
 
@@ -71,6 +72,6 @@ Artikel publik dan penghapusan admin sudah dikonfirmasi berfungsi oleh pemilik. 
 
 Desain utama: [Figma Draft 4](https://www.figma.com/design/167KzjdOtNG2fEY8wGrC0f/tumbuh.?node-id=0-1). Hasil pemeriksaan memakai acuan Draft 4.7 (`231:9`) dengan data input nyata dan status klasifikasi kosong, bukan status contoh Normal.
 
-Artikel tidak memiliki kategori. Gambar utama wajib tepat satu. Aset asli dipertahankan, termasuk SVG scroll-down. Font Inter disediakan lokal beserta lisensinya. AOS memakai fade-up 20 px, 740 ms, `cubic-bezier(.22,1,.36,1)`, sekali tampil; footer statis. Integrasi artikel tersedia; model DNN masih terpisah.
+Artikel tidak memiliki kategori. Gambar utama wajib tepat satu. Aset asli dipertahankan, termasuk SVG scroll-down. Font Inter disediakan lokal beserta lisensinya. AOS memakai fade-up 20 px, 740 ms, `cubic-bezier(.22,1,.36,1)`, sekali tampil; footer statis. Artikel memakai Supabase; model DNN memakai bobot asli yang dikonversi untuk browser.
 
 GitHub Pages memakai **Deploy from a branch**, dengan sumber `main` dan folder `/ (root)`, untuk publikasi otomatis saat push. Domain `www.ayotumbuh.my.id` dipertahankan melalui file `CNAME`.

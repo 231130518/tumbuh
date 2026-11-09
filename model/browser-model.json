@@ -1,0 +1,120 @@
+{
+  "format": "tumbuh-dense-v1",
+  "features": [
+    "Gender",
+    "Age (Month)",
+    "Weight",
+    "Height"
+  ],
+  "genderEncoding": {
+    "male": 1,
+    "female": 0
+  },
+  "scaler": {
+    "features": [
+      "Age (Month)",
+      "Weight",
+      "Height"
+    ],
+    "mean": [
+      32.99231562177865,
+      11.360951176084717,
+      86.01795208196671
+    ],
+    "scale": [
+      15.851363954555596,
+      2.709790105024946,
+      11.842333677410833
+    ]
+  },
+  "layers": [
+    {
+      "name": "dense",
+      "input": "input_layer",
+      "inputSize": 4,
+      "units": 128,
+      "activation": "relu",
+      "kernelOffset": 0,
+      "biasOffset": 512
+    },
+    {
+      "name": "dense_1",
+      "input": "dense",
+      "inputSize": 128,
+      "units": 64,
+      "activation": "relu",
+      "kernelOffset": 640,
+      "biasOffset": 8832
+    },
+    {
+      "name": "BBU",
+      "input": "dense_1",
+      "inputSize": 64,
+      "units": 4,
+      "activation": "softmax",
+      "kernelOffset": 8896,
+      "biasOffset": 9152
+    },
+    {
+      "name": "TBU",
+      "input": "dense_1",
+      "inputSize": 64,
+      "units": 2,
+      "activation": "softmax",
+      "kernelOffset": 9156,
+      "biasOffset": 9284
+    },
+    {
+      "name": "BBTB",
+      "input": "dense_1",
+      "inputSize": 64,
+      "units": 4,
+      "activation": "softmax",
+      "kernelOffset": 9286,
+      "biasOffset": 9542
+    }
+  ],
+  "outputs": [
+    {
+      "name": "BBU",
+      "labels": [
+        "Malnutrition",
+        "Normal",
+        "Overnutrition",
+        "Underfed"
+      ]
+    },
+    {
+      "name": "TBU",
+      "labels": [
+        "Not Stunted",
+        "Stunted"
+      ]
+    },
+    {
+      "name": "BBTB",
+      "labels": [
+        "Normal",
+        "Obese",
+        "Thin",
+        "Very Thin"
+      ]
+    }
+  ],
+  "source": {
+    "notebook": "https://colab.research.google.com/drive/1T8Fb687MnmcojKM0AwS7QSyGtumRQ47o",
+    "kerasVersion": "3.13.2",
+    "sha256": {
+      "model_tumbuh.keras": "fe4279553bacba903bd8197b69b29e8edbfc01e22a2da39afa3e9e833c85cc66",
+      "scaler_tumbuh.pkl": "2b4d045432df7a71b0494f289adce101e875d5f9bc520329cd290db96de02853",
+      "features.json": "ca2acf34450ee8128fda04044effd0b9d987832996f7d887f581bcbc5224943d",
+      "labels.json": "e2d962122153fc24b7dcf58ebb9f48a8e8843263b358953226f5ffd14de7b8eb"
+    }
+  },
+  "weights": {
+    "file": "weights-8ddd54c2ec72fc16.bin",
+    "bytes": 38184,
+    "sha256": "8ddd54c2ec72fc16c3553a5f77f6caf60f5dc1ad37d74508823d8f343f9e2058"
+  },
+  "modelId": "6aa989308891e9f59eeadf8dbe2e108960c6f834f02dc1782ec969b433316858"
+}

@@ -3804,6 +3804,10 @@ body[data-page="results"] .result-description {
   background: #eaf3e9;
   margin-top: 64px;
 }
+.result-tile[data-result="review"] .result-status { color: #79541d; background: #fff0d6; }
+#growth-result-message { color: #647a71; margin-bottom: 24px; }
+#growth-result-message[role="alert"] { color: #a32b35; }
+#growth-result-retry { margin-bottom: 24px; }
 .results-disclaimer h2 {
   font-size: 21px;
   line-height: 1.35;

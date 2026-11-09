@@ -18,11 +18,10 @@
     <main>
       <section class="results-hero" aria-labelledby="results-title">
         <div class="wrap">
-          <span class="eyebrow light">HASIL PEMERIKSAAN • PRATINJAU</span>
+          <span class="eyebrow light">HASIL PEMERIKSAAN</span>
           <h1 id="results-title">Kenali cerita tumbuh si kecil.</h1>
           <p>
-            Ringkasan data anak dan tiga indeks pertumbuhan. Klasifikasi belum
-            tersedia sampai model DNN terintegrasi.
+            Ringkasan data anak dan estimasi model untuk tiga indeks pertumbuhan.
           </p>
         </div>
         <div class="results-halos" aria-hidden="true">
@@ -76,47 +75,47 @@
           </div>
           <div
             class="results-classification"
+            id="growth-classification"
             aria-labelledby="classification-title"
           >
             <h2 id="classification-title">Gambaran tiga indeks pertumbuhan</h2>
+            <p id="growth-result-message" role="status" aria-live="polite">Isi data pemeriksaan untuk menjalankan analisis.</p>
+            <button class="btn outline" id="growth-result-retry" type="button" hidden>Coba analisis lagi</button>
             <div class="result-grid">
-              <article class="result-tile">
+              <article class="result-tile" data-growth-head="TBU">
                 <h3>TB/U</h3>
                 <p class="result-index-name">Tinggi badan menurut umur</p>
                 <span class="result-status">Belum tersedia</span>
                 <p class="result-description">
-                  Indeks untuk penilaian stunting. Status klasifikasi menunggu
-                  integrasi model DNN.
+                  Hasil model untuk tinggi badan menurut umur akan muncul setelah analisis.
                 </p>
               </article>
-              <article class="result-tile">
+              <article class="result-tile" data-growth-head="BBU">
                 <h3>BB/U</h3>
                 <p class="result-index-name">Berat badan menurut umur</p>
                 <span class="result-status">Belum tersedia</span>
                 <p class="result-description">
-                  Indeks untuk penilaian underweight. Status klasifikasi
-                  menunggu integrasi model DNN.
+                  Hasil model untuk berat badan menurut umur akan muncul setelah analisis.
                 </p>
               </article>
-              <article class="result-tile">
+              <article class="result-tile" data-growth-head="BBTB">
                 <h3>BB/TB</h3>
                 <p class="result-index-name">
                   Berat badan menurut tinggi badan
                 </p>
                 <span class="result-status">Belum tersedia</span>
                 <p class="result-description">
-                  Indeks untuk penilaian wasting. Status klasifikasi menunggu
-                  integrasi model DNN.
+                  Hasil model untuk berat badan menurut tinggi badan akan muncul setelah analisis.
                 </p>
               </article>
             </div>
           </div>
           <aside class="results-disclaimer">
-            <h2>Hasil klasifikasi belum tersedia</h2>
+            <h2>Hasil model, bukan diagnosis</h2>
             <p>
-              Data di atas berasal dari isian Anda, bukan hasil analisis DNN.
-              Tidak ada prediksi yang dibuat pada pratinjau ini. Informasi di
-              TUMBUH tidak menggantikan penilaian tenaga kesehatan.
+              Hasil merupakan estimasi model berdasarkan data yang Anda masukkan.
+              Label mengikuti kategori model yang dilatih. Konfirmasikan hasil
+              melalui pengukuran dan penilaian tenaga kesehatan.
             </p>
           </aside>
           <div class="results-actions">
@@ -129,6 +128,7 @@
       </section>
     </main>
     <div id="site-footer"></div>
+    <script src="../js/growth-model.js" defer></script>
     <script src="../js/main.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
