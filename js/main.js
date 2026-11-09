@@ -376,6 +376,7 @@ function editor() {
   });
   const file = document.getElementById("cover-file");
   const preview = document.getElementById("cover-preview");
+  if (!file || !preview) return; // Editor revisi admin tidak mengganti gambar sampul.
   let objectUrl = null;
   file.addEventListener("change", () => {
     if (objectUrl) URL.revokeObjectURL(objectUrl);

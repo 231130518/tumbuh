@@ -60,5 +60,35 @@
     if (!data || data.id !== safeId) throw new Error("Penghapusan belum terkonfirmasi. Artikel mungkin berubah, sudah dihapus, atau izin hapus belum tersedia. Muat ulang artikel.");
   }
 
-  window.TumbuhAdminArticles = Object.freeze({ list, get, setStatus, remove, imageUrl, sanitize, statuses: STATUSES });
+  async function revise(before, fields) {
+    const safeId = articleId(before?.id);
+    if (!STATUSES[before.status]) throw new Error("Status artikel tidak valid. Muat ulang artikel.");
+    const title = String(fields.title || "").trim();
+    const subtitle = String(fields.subtitle || "").trim();
+    const raw = String(fields.content || "");
+    if (title.length < 5 || title.length > 150) throw new Error("Judul harus 5–150 karakter.");
+    if (subtitle.length < 12 || subtitle.length > 500) throw new Error("Subjudul harus 12–500 karakter.");
+    if (raw.length > 100000) throw new Error("Format isi terlalu panjang. Sederhanakan format tulisan.");
+    const clean = window.TumbuhArticleContent.html(raw);
+    if (clean.text.length < 25 || clean.text.length > 50000 || clean.html.length > 100000) {
+      throw new Error("Isi artikel harus 25–50.000 karakter dengan format yang tidak berlebihan.");
+    }
+    // Baca ulang sebelum menyimpan agar editor lama tidak langsung menimpa revisi lain.
+    const latest = await get(safeId);
+    if (!latest || ["title", "subtitle", "content", "status"].some((key) => latest[key] !== before[key])) {
+      throw new Error("Artikel sudah berubah sejak editor dibuka. Salin revisi Anda, lalu tutup editor dan muat ulang artikel.");
+    }
+    await api.requireAdmin();
+    const { data, error } = await api.getClient().from("articles")
+      .update({ title, subtitle, content: clean.html })
+      .eq("id", safeId).eq("status", before.status).select(DETAIL_FIELDS).maybeSingle();
+    if (error) {
+      if (error.code === "42501") throw new Error("Izin menyunting artikel ditolak (42501). Pengelola perlu memeriksa izin UPDATE judul, subjudul, dan isi di Supabase. Revisi Anda masih ada di editor.");
+      throw new Error("Revisi belum terkonfirmasi tersimpan. Periksa koneksi lalu coba lagi; isian Anda tetap ada di editor.");
+    }
+    if (!data || data.status !== before.status) throw new Error("Revisi belum tersimpan: status artikel berubah atau akses telah dicabut. Salin revisi Anda lalu muat ulang artikel.");
+    return data;
+  }
+
+  window.TumbuhAdminArticles = Object.freeze({ list, get, setStatus, remove, revise, imageUrl, sanitize, statuses: STATUSES });
 })();

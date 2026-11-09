@@ -4006,6 +4006,19 @@ body[data-page="results"] .result-description {
 .review-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 0; }
 .admin-preview-load { padding-top: 20px; padding-bottom: 20px; }
 .admin-preview-load:has(#preview-load-message:empty) { padding-top: 0; }
+.admin-edit-dialog { width: min(900px, calc(100% - 32px)); max-height: calc(100dvh - 40px); padding: 0; border: 0; border-radius: 24px; background: #fff; color: var(--dark); overflow-y: auto; }
+.admin-edit-dialog::backdrop { background: #123c35a6; }
+.admin-edit-dialog .form-card { padding: 30px; border: 0; box-shadow: none; }
+.admin-edit-dialog h2 { margin-top: 0; }
+.admin-edit-dialog fieldset { margin: 22px 0; padding: 0; border: 0; min-width: 0; }
+.admin-edit-dialog .field { margin-bottom: 20px; }
+.admin-edit-dialog .editor { min-height: 260px; max-height: 45dvh; overflow-y: auto; overflow-wrap: anywhere; }
+.admin-edit-dialog .editor-tools { flex-wrap: wrap; }
+.admin-edit-dialog .article-form-actions { flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .admin-edit-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 16px; }
+  .admin-edit-dialog .form-card { padding: 20px 16px; }
+}
 body[data-page^="admin-"] button:disabled { cursor: not-allowed; opacity: .55; }
 body[data-page^="admin-"] .is-error { color: #a32b35; }
 body[data-page^="admin-"] .review-desc { min-width: 0; overflow-wrap: anywhere; }

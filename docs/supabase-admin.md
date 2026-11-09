@@ -38,7 +38,7 @@ Mount `/tumbuh/` tetap didukung oleh jalur relatif. Jangan mengubah semua rute m
 
 Semua data asli diambil dari `public.articles`. ID `int8` dipilih sebagai `id::text` agar ID besar tidak dibulatkan oleh JavaScript. List hanya mengambil kolom yang diperlukan, tidak mengambil email penulis atau seluruh isi artikel. Email hanya ditampilkan pada pratinjau admin setelah verifikasi. Gambar menggunakan bucket `articles-images`; `cover_image_path` sebaiknya berupa path objek, misalnya `covers/uuid-gambar.webp`. URL publik dari bucket/proyek yang sama juga diterima; URL eksternal, SVG, dan traversal path ditolak.
 
-Tombol edit/draf tetap berada di UI, tetapi dinonaktifkan dan diberi keterangan belum tersedia. Kedua fitur itu tidak mengirim operasi Supabase; skema hanya mendukung `pending`, `published`, `rejected`. Approve/reject hanya mengirim kolom `status`, dengan syarat ID dan status sebelumnya masih sama. Jika artikel telah diubah tab/admin lain atau RLS menolak baris, aplikasi tidak melaporkan sukses; muat ulang artikel sebelum mengambil keputusan lagi.
+Edit Artikel membuka editor judul, subjudul, dan isi. Simpan Revisi hanya memperbarui ketiga kolom tersebut; penulis, email, gambar, dan status tetap. Tombol draf masih dinonaktifkan; skema hanya mendukung `pending`, `published`, `rejected`. Approve/reject hanya mengirim kolom `status`, dengan syarat ID dan status sebelumnya masih sama. Jika artikel telah diubah tab/admin lain atau RLS menolak baris, aplikasi tidak melaporkan sukses; muat ulang artikel sebelum mengambil keputusan lagi.
 
 ## Lapisan keamanan
 
@@ -106,3 +106,15 @@ Implementasi memakai [`delete()` SDK resmi](https://supabase.com/docs/reference/
 - [Login password](https://supabase.com/docs/reference/javascript/auth-signinwithpassword), [verifikasi pengguna](https://supabase.com/docs/reference/javascript/auth-getuser), [perubahan sesi](https://supabase.com/docs/reference/javascript/auth-onauthstatechange)
 - [API keys](https://supabase.com/docs/guides/getting-started/api-keys) dan [Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - [DOMPurify](https://github.com/cure53/DOMPurify)
+
+## Revisi artikel oleh admin
+
+Buka pratinjau → Edit Artikel → perbaiki tulisan/format → Simpan Revisi. Kiriman pending tetap menunggu tinjauan; setelah membaca ulang, tekan Setujui untuk menerbitkan. Pada artikel yang sudah published, revisi tersimpan langsung berlaku di halaman publik setelah dimuat ulang.
+
+Editor mendukung tebal, miring, heading, daftar, paragraf, dan tautan. HTML dibersihkan ketika ditempel, disimpan, dan ditampilkan. Pembatalan meminta konfirmasi jika ada perubahan. Isian dipertahankan saat penyimpanan gagal; berpindah tab memverifikasi sesi kembali dan memulihkan editor hanya untuk UUID admin yang sama. Logout/sesi tidak sah membersihkan editor. Revisi belum tersimpan tidak disimpan ke localStorage.
+
+Izin server yang dibutuhkan adalah UPDATE pada `title`, `subtitle`, dan `content`, dengan policy RLS khusus admin yang sudah ada. Jika muncul 42501, tinjau grants kolom serta policy UPDATE melalui Supabase; jangan membuka UPDATE untuk anon atau menonaktifkan RLS. Tidak ada policy produksi yang diubah oleh fitur ini.
+
+Sebelum menyimpan, aplikasi membaca ulang artikel untuk mendeteksi perubahan sejak editor dibuka; UPDATE juga dibatasi ID dan status sebelumnya. Skema belum mempunyai kolom versi, sehingga ini bukan penguncian transaksi untuk penyuntingan serentak: perubahan isi dari dua admin yang menyimpan tepat bersamaan masih dapat saling menimpa.
+
+Pengujian browser fitur revisi belum dinyatakan lulus; pemilik memilih menguji sendiri setelah publikasi. Cek simpan lalu refresh, batal, formatting, status pending yang tetap, izin non-admin, serta pesan gagal tanpa kehilangan isian.

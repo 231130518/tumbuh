@@ -131,7 +131,7 @@
               </p>
             </div>
             <div class="admin-preview-buttons" id="preview-action-buttons">
-              <button class="btn outline" type="button" id="edit-article" disabled title="Pengeditan belum tersedia">Edit Artikel</button>
+              <button class="btn outline" type="button" id="edit-article">Edit Artikel</button>
               <button class="btn outline" type="button" id="draft-article" disabled title="Fitur draf belum tersedia">
                 Simpan Draf
               </button>
@@ -154,6 +154,43 @@
           ></p>
         </section>
       </div>
+      <dialog class="admin-edit-dialog" id="article-edit-dialog" aria-labelledby="article-edit-heading">
+        <form id="admin-edit-form" class="form-card">
+          <h2 id="article-edit-heading">Revisi artikel</h2>
+          <p class="body-muted" id="article-edit-note"></p>
+          <fieldset id="article-edit-fields">
+            <div class="field">
+              <label for="edit-title">Judul artikel</label>
+              <input id="edit-title" name="title" minlength="5" maxlength="150" required />
+            </div>
+            <div class="field">
+              <label for="edit-subtitle">Subjudul</label>
+              <textarea id="edit-subtitle" name="subtitle" rows="3" minlength="12" maxlength="500" required></textarea>
+            </div>
+            <div class="field">
+              <label id="edit-content-label">Isi artikel</label>
+              <div class="editor-tools" role="group" aria-label="Format isi artikel">
+                <button type="button" data-editor-action="bold" title="Tebal">B</button>
+                <button type="button" data-editor-action="italic" title="Miring"><em>I</em></button>
+                <button type="button" data-editor-action="formatBlock" data-editor-value="h2">H2</button>
+                <button type="button" data-editor-action="formatBlock" data-editor-value="h3">H3</button>
+                <button type="button" data-editor-action="insertUnorderedList">• Daftar</button>
+                <button type="button" data-editor-action="insertOrderedList">1. Daftar</button>
+                <button type="button" data-editor-action="formatBlock" data-editor-value="p">Paragraf</button>
+                <button type="button" data-editor-action="createLink">Tautan</button>
+                <button type="button" data-editor-action="unlink">Hapus tautan</button>
+                <button type="button" data-editor-action="removeFormat">Hapus format</button>
+              </div>
+              <div class="editor" id="content-editor" contenteditable="true" role="textbox" aria-labelledby="edit-content-label" aria-multiline="true"></div>
+            </div>
+          </fieldset>
+          <p class="review-feedback" id="edit-feedback" role="status" hidden></p>
+          <div class="article-form-actions">
+            <button class="btn" type="submit" id="save-article-edit">Simpan Revisi</button>
+            <button class="btn outline" type="button" id="cancel-article-edit">Batal</button>
+          </div>
+        </form>
+      </dialog>
       <section
         id="preview-not-found"
         class="wrap admin-preview-notfound"

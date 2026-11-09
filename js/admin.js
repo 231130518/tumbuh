@@ -22,6 +22,87 @@
   let page = 0;
   let currentArticle = null;
   let actionBusy = false;
+  let verifiedUserId = null;
+  let editSnapshot = null;
+  let editInitial = "";
+
+  function editValues() {
+    return { title: $("edit-title").value, subtitle: $("edit-subtitle").value, content: $("content-editor").innerHTML };
+  }
+
+  function hasUnsavedEdit() {
+    return !!editSnapshot && JSON.stringify(editValues()) !== editInitial;
+  }
+
+  function clearEditor() {
+    editSnapshot = null;
+    editInitial = "";
+    if ($("article-edit-dialog")?.open) $("article-edit-dialog").close();
+    $("admin-edit-form")?.reset();
+    $("content-editor")?.replaceChildren();
+    notice($("edit-feedback"), "");
+  }
+
+  function openEditor(draft) {
+    if (!verified || !currentArticle || actionBusy) return;
+    try {
+      editSnapshot = draft?.before || { ...currentArticle };
+      const values = draft?.fields || editSnapshot;
+      $("edit-title").value = values.title || "";
+      $("edit-subtitle").value = values.subtitle || "";
+      $("content-editor").replaceChildren(articles.sanitize(values.content));
+      editInitial = draft?.initial || JSON.stringify(editValues());
+      $("article-edit-note").textContent = editSnapshot.status === "published"
+        ? "Artikel ini sudah terbit. Revisi yang disimpan akan langsung tampil pada halaman publik."
+        : "Perbaiki tulisan dan formatnya. Simpan Revisi mempertahankan status artikel; penerbitan dilakukan melalui tombol Setujui.";
+      notice($("edit-feedback"), "");
+      $("article-edit-dialog").showModal();
+    } catch (error) {
+      clearEditor();
+      notice($("preview-feedback"), error.message, true);
+    }
+  }
+
+  function cancelEdit() {
+    if (actionBusy) return;
+    if (hasUnsavedEdit() && !confirm("Buang revisi yang belum disimpan?")) return;
+    clearEditor();
+    $("edit-article")?.focus();
+  }
+
+  async function saveEdit(event) {
+    event.preventDefault();
+    if (!verified || !editSnapshot || actionBusy || !$("admin-edit-form").reportValidity()) return;
+    const before = editSnapshot;
+    const fields = editValues();
+    const version = generation;
+    actionBusy = true;
+    $("article-edit-fields").disabled = true;
+    $("content-editor").contentEditable = "false";
+    $("save-article-edit").disabled = true;
+    $("cancel-article-edit").disabled = true;
+    $("save-article-edit").textContent = "Menyimpan…";
+    $("admin-edit-form").setAttribute("aria-busy", "true");
+    notice($("edit-feedback"), "Menyimpan revisi…");
+    try {
+      const saved = await articles.revise(before, fields);
+      if (!verified || version !== generation) return;
+      clearEditor();
+      renderPreview(saved);
+      notice($("preview-feedback"), `Revisi tersimpan. Status artikel: ${articles.statuses[saved.status]}.`);
+      $("edit-article").focus();
+    } catch (error) {
+      if (version === generation) await dataFailure(error, $("edit-feedback"));
+    } finally {
+      actionBusy = false;
+      $("article-edit-fields").disabled = false;
+      $("content-editor").contentEditable = "true";
+      $("save-article-edit").disabled = false;
+      $("cancel-article-edit").disabled = false;
+      $("save-article-edit").textContent = "Simpan Revisi";
+      $("admin-edit-form").removeAttribute("aria-busy");
+    }
+  }
 
   function notice(element, message, error = false) {
     if (!element) return;
@@ -40,6 +121,8 @@
 
   function lock() {
     verified = false;
+    verifiedUserId = null;
+    clearEditor();
     generation += 1;
     requestNumber += 1;
     currentArticle = null;
@@ -198,6 +281,7 @@
     $("approve-article").disabled = !articles.statuses[article.status];
     $("reject-article").disabled = !articles.statuses[article.status];
     $("delete-article").disabled = !articles.statuses[article.status];
+    $("edit-article").disabled = !articles.statuses[article.status];
     $("admin-preview-article").hidden = false;
     window.TumbuhAOS?.refresh();
   }
@@ -234,7 +318,7 @@
     const version = generation;
     const article = currentArticle;
     actionBusy = true;
-    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload")];
+    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload"), $("edit-article")];
     buttons.forEach((button) => { button.disabled = true; });
     notice($("preview-feedback"), "Menyimpan keputusan…");
     try {
@@ -256,7 +340,7 @@
     if (!confirm(`Hapus artikel “${article.title}” secara permanen? Artikel akan hilang dari dashboard dan halaman publik. Tindakan ini tidak dapat dibatalkan.`)) return;
     const version = generation;
     actionBusy = true;
-    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload")];
+    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload"), $("edit-article")];
     buttons.forEach((button) => { button.disabled = true; });
     $("delete-article").textContent = "Menghapus…";
     notice($("preview-feedback"), "Menghapus artikel…");
@@ -277,20 +361,29 @@
   function refreshAccess() {
     if (checking) return checking;
     if (signingIn || loggingOut) return Promise.resolve();
+    if (editSnapshot && actionBusy) return Promise.resolve();
+    // Simpan hanya di memori selama verifikasi ulang; pulihkan hanya untuk UUID sama.
+    const draft = editSnapshot && $("article-edit-dialog").open
+      ? { before: editSnapshot, fields: editValues(), initial: editInitial, userId: verifiedUserId }
+      : null;
     lock();
     const version = generation;
     gate("Memeriksa sesi dan akses admin…");
     checking = (async () => {
       try {
-        await api.requireAdmin();
+        const user = await api.requireAdmin();
         if (version !== generation) return;
         verified = true;
+        verifiedUserId = user.id;
         if (loginPage) { location.replace(loginDestination()); return; }
         $("admin-access").hidden = true;
         content.hidden = false;
         content.inert = false;
         document.querySelectorAll("[data-admin-logout]").forEach((button) => { button.hidden = false; });
-        if (previewPage) await loadPreview();
+        if (draft && user.id === draft.userId) {
+          renderPreview(draft.before);
+          openEditor(draft);
+        } else if (previewPage) await loadPreview();
         else await loadList();
       } catch (error) {
         if (version === generation) {
@@ -375,7 +468,7 @@
         const changed = lastToken !== session?.access_token || event === "USER_UPDATED";
         lastToken = session?.access_token || null;
         if (changed && !signingIn && !loggingOut) {
-          lock();
+          if (!editSnapshot || session?.user?.id !== verifiedUserId) lock();
           clearTimeout(authTimer);
           authTimer = setTimeout(() => {
             if (checking) checking.then(refreshAccess);
@@ -403,6 +496,23 @@
     $("approve-article")?.addEventListener("click", () => decide("published"));
     $("reject-article")?.addEventListener("click", () => decide("rejected"));
     $("delete-article")?.addEventListener("click", deleteArticle);
+    $("edit-article")?.addEventListener("click", () => openEditor());
+    $("admin-edit-form")?.addEventListener("submit", saveEdit);
+    $("cancel-article-edit")?.addEventListener("click", cancelEdit);
+    $("article-edit-dialog")?.addEventListener("cancel", (event) => { event.preventDefault(); cancelEdit(); });
+    $("content-editor")?.addEventListener("paste", (event) => {
+      if (!editSnapshot || !event.clipboardData) return;
+      event.preventDefault();
+      try {
+        const rich = event.clipboardData.getData("text/html");
+        if (rich) document.execCommand("insertHTML", false, window.TumbuhArticleContent.html(rich).html);
+        else document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
+      } catch { notice($("edit-feedback"), "Teks belum dapat ditempel dengan aman. Coba tempel sebagai teks biasa.", true); }
+    });
+    $("content-editor")?.addEventListener("drop", (event) => event.preventDefault());
+    window.addEventListener("beforeunload", (event) => {
+      if (hasUnsavedEdit()) { event.preventDefault(); event.returnValue = ""; }
+    });
     $("show-full-cover")?.addEventListener("click", () => { if (verified && currentArticle) $("full-cover-dialog").showModal(); });
     $("close-full-cover")?.addEventListener("click", () => $("full-cover-dialog").close());
     $("full-cover-dialog")?.addEventListener("click", (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });

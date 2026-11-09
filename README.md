@@ -54,7 +54,7 @@ Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript me
 
 Data anak hanya disimpan sementara dalam `sessionStorage` dengan kunci `tumbuh-growth-input-v1`, bukan di database artikel. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan. Model memakai urutan Gender, usia dalam bulan penuh, berat dalam kg, dan tinggi dalam cm. Pemetaan Gender dan StandardScaler mengikuti notebook pelatihan. Inferensi berlangsung di browser tanpa mengirim data anak ke server. Halaman tanpa input menampilkan kondisi kosong; kegagalan memuat model tidak menghasilkan klasifikasi pengganti.
 
-Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Fitur edit/draf admin dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin. Model pertumbuhan sudah terhubung; dataset pelatihan tidak diperlukan saat website berjalan.
+Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Admin dapat merevisi judul, subjudul, dan isi artikel melalui Edit Artikel; Simpan Revisi mempertahankan status. Fitur draf admin tetap dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin. Model pertumbuhan sudah terhubung; dataset pelatihan tidak diperlukan saat website berjalan.
 
 ## Konfigurasi admin Supabase
 
