@@ -1,4 +1,5 @@
 const articleData = [];
+/// Daftar artikel pratinjau diisi di js/articles.js agar tidak memuat seluruh konten artikel.
 const rootPath = location.pathname.includes("/admin/") ? "../" : "./";
 function header() {
   const el = document.querySelector("#site-header");
