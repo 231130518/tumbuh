@@ -203,6 +203,33 @@ async function mock(context, options = {}) {
     } finally { await context.close(); }
   }
   try {
+    await test('Navigasi: tautan langsung dan alias lama tanpa halaman perantara', async ({ context, page, goto, origin }) => {
+      const aliases = {
+        'articles.html': 'artikel/', 'article.html': 'artikel/baca/',
+        'submit.html': 'kirim-artikel/', 'results.html': 'hasil-pemeriksaan/',
+        'admin/login.html': 'admin/', 'admin/login/': 'admin/',
+      };
+      // Simulasikan unduhan JS/CSS lambat; alias sendiri tidak meminta aset.
+      await context.route(/\.(?:js|css)(?:\?.*)?$/, async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        await route.fallback();
+      });
+      await context.route('**/js/redirect.js', (route) => { throw new Error('Redirect masih bergantung pada JS eksternal: ' + route.request().url()); });
+      for (const prefix of ['/', '/tumbuh/']) {
+        for (const [from, to] of Object.entries(aliases)) {
+          const source = fs.readFileSync(path.join(root, from.endsWith('/') ? from + 'index.html' : from), 'utf8');
+          assert(!/script\s+src=|stylesheet|<img\b/.test(source));
+          assert(!source.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').includes('Buka halaman TUMBUH'));
+          await goto(prefix + from + '?id=9223372036854775806#tujuan');
+          await page.waitForURL(origin + prefix + to + '?id=9223372036854775806#tujuan');
+          assert.equal(await page.locator('body').innerText().then((text) => /Halaman ini memiliki alamat baru|Lanjut ke halaman TUMBUH/.test(text)), false);
+        }
+      }
+      await goto('/');
+      assert.equal(await page.locator('a[href="articles.html"], a[href="submit.html"]').count(), 0);
+      assert(await page.locator('a[href="artikel/"]').count() > 0);
+      assert(await page.locator('a[href="kirim-artikel/"]').count() > 0);
+    });
     await test('Skeleton publik: shimmer, mobile, sukses, detail, gagal dan retry', async ({ page, state, goto }) => {
       state.rows[0].status = 'published';
       let release;

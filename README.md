@@ -45,7 +45,7 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 
 Alamat `/admin` membuka halaman login; alamat lama `/admin/login/` tetap dialihkan ke sana. Dashboard dan pratinjau memerlukan sesi Supabase terverifikasi serta keanggotaan `admin_users`. RLS tetap menjadi pengaman data di server.
 
-Setiap URL folder memiliki `index.html` sendiri, sehingga bisa dibuka langsung dan di-refresh pada hosting statis. File `.html` lama menjadi pengalih melalui `js/redirect.js`, dengan query dan tujuan scroll tetap diteruskan. Ubah isi halaman pada file dalam folder baru, bukan pada file pengalih lama.
+Setiap URL folder memiliki `index.html` sendiri, sehingga bisa dibuka langsung dan di-refresh pada hosting statis. Navigasi situs langsung menuju URL folder. File `.html` lama hanya menyimpan pengalihan inline tanpa unduhan JS tambahan atau tampilan perantara; query dan tujuan scroll tetap diteruskan. Tautan manual hanya tampil jika JavaScript dimatikan. Ubah isi halaman pada file dalam folder baru, bukan pada file pengalih lama.
 
 Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript menggulir ke tujuan dan membersihkan hash dari address bar. ID artikel tetap memakai query; pratinjau admin dan halaman publik memakai ID database. Jalur aset dan navigasi mendukung domain sendiri maupun alamat proyek `/tumbuh/`, tanpa perubahan DNS atau framework.
 

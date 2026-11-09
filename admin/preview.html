@@ -4,15 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Halaman dipindahkan — TUMBUH</title>
-    <script src="../js/redirect.js" defer></script>
-    <link rel="icon" type="image/png" href="../assets/logo-tumbuh.png?v=20261108" />
-    <link rel="apple-touch-icon" href="../assets/logo-tumbuh.png?v=20261108" />
+    <title>TUMBUH</title>
+    <style>html { background: #f7f9f3; }</style>
+    <script>
+      // Langsung berpindah tanpa menunggu file JS, CSS, atau gambar.
+      const destination = new URL("pratinjau/", location.href);
+      destination.search = location.search;
+      destination.hash = location.hash;
+      location.replace(destination.href);
+    </script>
   </head>
   <body>
-    <p>
-      Halaman ini memiliki alamat baru.
-      <a id="redirect-link" href="pratinjau/">Lanjut ke halaman TUMBUH</a>.
-    </p>
+    <noscript><p><a href="pratinjau/">Buka halaman TUMBUH</a></p></noscript>
   </body>
 </html>

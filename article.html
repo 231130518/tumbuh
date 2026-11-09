@@ -1,75 +1,20 @@
 <!doctype html>
 <html lang="id">
   <head>
-    <script src="js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Isi Artikel — TUMBUH</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
-    />
-    <link rel="stylesheet" href="css/style.css" />
+    <meta name="robots" content="noindex" />
+    <title>TUMBUH</title>
+    <style>html { background: #f7f9f3; }</style>
+    <script>
+      // Langsung berpindah tanpa menunggu file JS, CSS, atau gambar.
+      const destination = new URL("artikel/baca/", location.href);
+      destination.search = location.search;
+      destination.hash = location.hash;
+      location.replace(destination.href);
+    </script>
   </head>
-  <body data-page="article">
-    <div id="site-header"></div>
-    <main>
-      <section class="article-hero" aria-labelledby="article-hero-title">
-        <div class="wrap article-hero-inner">
-          <div class="article-breadcrumb">BERANDA / ARTIKEL EDUKASI</div>
-          <h1 id="article-hero-title">
-            Inspirasi makanan sehat<br />dan bergizi untuk si kecil.
-          </h1>
-          <p id="article-hero-subtitle" class="article-hero-subtitle">
-            Ide sederhana membuat waktu makan lebih menyenangkan, dengan pilihan
-            menu beragam yang mudah dipahami keluarga.
-          </p>
-          <p id="article-hero-meta" class="article-hero-meta">
-            29 OKTOBER 2026 &nbsp; • &nbsp; FITRI NOVITASARI BR MANALU
-          </p>
-        </div>
-        <div class="article-hero-rings" aria-hidden="true"></div>
-      </section>
-      <div class="article-cover-banner">
-        <img
-          id="article-cover-image"
-          src="assets/artikel-1.jpg"
-          alt="Ilustrasi untuk artikel edukasi TUMBUH"
-        />
-      </div>
-      <section class="article-content-section">
-        <div class="wrap article-layout">
-          <article class="article-detail" id="article-detail"></article>
-          <aside
-            class="article-latest"
-            aria-label="Bacaan pilihan dan artikel lainnya"
-          >
-            <h2 class="article-latest-title">Bacaan pilihan</h2>
-            <p class="article-latest-subtitle">
-              Pilihan artikel untuk menemani keluarga.
-            </p>
-            <div
-              id="article-recommendations"
-              class="article-latest-items"
-            ></div>
-            <div class="article-latest-cta">
-              <h3>Tumbuh bersama informasi.</h3>
-              <p>
-                Temukan lebih banyak bacaan edukasi untuk mendampingi
-                pertumbuhan si kecil.
-              </p>
-              <a href="articles.html">Jelajahi artikel ↗</a>
-            </div>
-          </aside>
-        </div>
-      </section>
-    </main>
-    <div id="site-footer"></div>
-    <script src="js/main.js" defer></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
-      defer
-    ></script>
-    <script src="js/aos-tumbuh.js" defer></script>
+  <body>
+    <noscript><p><a href="artikel/baca/">Buka halaman TUMBUH</a></p></noscript>
   </body>
 </html>
