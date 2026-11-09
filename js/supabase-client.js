@@ -2,6 +2,7 @@
 (() => {
   "use strict";
   let client;
+  let publicClient;
 
   class AccessError extends Error {
     constructor(code, message) {
@@ -94,5 +95,25 @@
     return userData.user;
   }
 
-  window.TumbuhSupabase = Object.freeze({ getClient, getConfig, requireAdmin, AccessError });
+  function getPublicClient() {
+    if (publicClient) return publicClient;
+    const config = getConfig();
+    if (!window.supabase?.createClient) {
+      throw new AccessError("config", "Layanan pengiriman belum dimuat. Muat ulang halaman.");
+    }
+    // Pengiriman publik selalu memakai role anon, termasuk saat browser memiliki
+    // sesi admin. Jangan meminjam atau mengganti sesi login admin.
+    publicClient = window.supabase.createClient(config.url, config.publishableKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        storageKey: "tumbuh-public-submissions",
+      },
+      global: { fetch: timedFetch },
+    });
+    return publicClient;
+  }
+
+  window.TumbuhSupabase = Object.freeze({ getClient, getPublicClient, getConfig, requireAdmin, AccessError });
 })();

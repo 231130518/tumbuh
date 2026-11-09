@@ -139,6 +139,7 @@
       nodes.forEach((el, i) => {
         if (
           el.hasAttribute("data-aos") ||
+          el.closest("[data-async-content], .article-skeleton") ||
           el.closest("#site-footer") ||
           el.closest(".hero-content") ||
           el.closest(".hero-visual")

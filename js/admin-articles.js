@@ -8,55 +8,7 @@
   const DETAIL_FIELDS = `${LIST_FIELDS},author_email,content`;
   const PAGE_SIZE = 20;
 
-  function articleId(value) {
-    const id = String(value || "");
-    if (!/^[1-9][0-9]{0,18}$/.test(id) || BigInt(id) > 9223372036854775807n) {
-      throw new Error("ID artikel tidak valid.");
-    }
-    return id;
-  }
-
-  function imageUrl(path) {
-    if (typeof path !== "string" || !path.trim()) return "";
-    let objectPath = path.trim();
-    const prefix = "/storage/v1/object/public/articles-images/";
-    if (/^https:\/\//i.test(objectPath)) {
-      try {
-        const url = new URL(objectPath);
-        if (url.origin !== new URL(api.getConfig().url).origin || !url.pathname.startsWith(prefix) || url.search || url.hash) return "";
-        objectPath = decodeURIComponent(url.pathname.slice(prefix.length));
-      } catch { return ""; }
-    }
-    objectPath = objectPath.replace(/^articles-images\//, "");
-    if (!/\.(jpe?g|png|webp)$/i.test(objectPath) || /[\\%?#:\x00-\x1f]/.test(objectPath) ||
-        objectPath.split("/").some((part) => !part || part === "." || part === "..")) return "";
-    return api.getClient().storage.from("articles-images").getPublicUrl(objectPath).data.publicUrl;
-  }
-
-  function sanitize(raw) {
-    if (!window.DOMPurify?.isSupported) throw new Error("Pembersih konten tidak tersedia. Pratinjau tidak dapat dibuka.");
-    const fragment = window.DOMPurify.sanitize(String(raw || ""), {
-      ALLOWED_TAGS: ["p", "h1", "h2", "h3", "h4", "ul", "ol", "li", "strong", "b", "em", "i", "u", "br", "blockquote", "a", "div", "span"],
-      ALLOWED_ATTR: ["href", "title", "class"],
-      ALLOW_DATA_ATTR: false,
-      ALLOW_ARIA_ATTR: false,
-      RETURN_DOM_FRAGMENT: true,
-    });
-    for (const node of fragment.querySelectorAll("[class]")) {
-      const safe = [...node.classList].filter((name) => ["article-step-list", "article-step-num", "article-disclaimer"].includes(name));
-      node.removeAttribute("class");
-      if (safe.length) node.classList.add(...safe);
-    }
-    for (const link of fragment.querySelectorAll("a")) {
-      const href = link.getAttribute("href") || "";
-      if (!/^(https?:\/\/|mailto:)/i.test(href)) link.removeAttribute("href");
-      else {
-        link.setAttribute("rel", "noopener noreferrer nofollow");
-        link.setAttribute("target", "_blank");
-      }
-    }
-    return fragment;
-  }
+  const { articleId, imageUrl, sanitize } = window.TumbuhArticleContent;
 
   async function list(filter = "pending", page = 0) {
     if (filter !== "semua" && !STATUSES[filter]) throw new Error("Filter artikel tidak valid.");
@@ -97,5 +49,16 @@
     return data;
   }
 
-  window.TumbuhAdminArticles = Object.freeze({ list, get, setStatus, imageUrl, sanitize, statuses: STATUSES });
+  async function remove(id, before) {
+    const safeId = articleId(id);
+    if (!STATUSES[before]) throw new Error("Status artikel tidak valid. Muat ulang artikel.");
+    await api.requireAdmin();
+    const { data, error } = await api.getClient().from("articles").delete()
+      .eq("id", safeId).eq("status", before).select("id::text").maybeSingle();
+    if (error) throw new Error("Artikel belum dapat dihapus. Periksa koneksi dan izin hapus admin, lalu muat ulang sebelum mencoba lagi.");
+    // RLS dapat mengembalikan nol baris tanpa error; jangan mengaku berhasil.
+    if (!data || data.id !== safeId) throw new Error("Penghapusan belum terkonfirmasi. Artikel mungkin berubah, sudah dihapus, atau izin hapus belum tersedia. Muat ulang artikel.");
+  }
+
+  window.TumbuhAdminArticles = Object.freeze({ list, get, setStatus, remove, imageUrl, sanitize, statuses: STATUSES });
 })();

@@ -1,13 +1,13 @@
-/* Data demo halaman publik dan formulir lokal saja.
-   Admin sungguhan memakai admin.js + admin-articles.js dan Supabase.
+/* TUMBUH — pratinjau artikel lengkap untuk DEMO frontend.
+   Tidak ada autentikasi backend, server, atau publikasi sungguhan.
+   Gunakan API dan database ketika tahap backend dimulai.
 */
 (() => {
   "use strict";
-  const routes = window.TumbuhRoutes;
   const STORAGE_KEY = "tumbuh-frontend-articles-v1";
   const STATUS = {
     pending: { label: "Menunggu tinjauan", css: "pending" },
-    published: { label: "Terbit (demo lokal)", css: "published" },
+    published: { label: "Disetujui (demo)", css: "published" },
     rejected: { label: "Ditolak (demo)", css: "rejected" },
     draft: { label: "Draf", css: "draft" },
   };
@@ -84,8 +84,11 @@
     );
 
   function sanitizeArticleHtml(raw) {
-    const doc = new DOMParser().parseFromString(String(raw || ""), "text/html");
-    const root = doc.body;
+    const doc = new DOMParser().parseFromString(
+      `<div id="root">${String(raw || "")}</div>`,
+      "text/html",
+    );
+    const root = doc.getElementById("root");
     const allowed = new Set([
       "P",
       "H1",
@@ -103,8 +106,6 @@
       "BR",
       "BLOCKQUOTE",
       "A",
-      "DIV",
-      "SPAN",
     ]);
     const dangerous = new Set([
       "SCRIPT",
@@ -139,21 +140,11 @@
           node.replaceWith(...Array.from(node.childNodes));
           continue;
         }
-        const safeClasses = (node.getAttribute("class") || "")
-          .split(/\s+/)
-          .filter((name) =>
-            [
-              "article-step-list",
-              "article-step-num",
-              "article-disclaimer",
-            ].includes(name),
-          );
         const originalHref =
           node.tagName === "A" ? node.getAttribute("href") || "" : "";
         Array.from(node.attributes).forEach((attr) =>
           node.removeAttribute(attr.name),
         );
-        if (safeClasses.length) node.className = safeClasses.join(" ");
         if (
           node.tagName === "A" &&
           /^(https?:\/\/|mailto:)/i.test(originalHref)
@@ -168,92 +159,202 @@
     return root.innerHTML;
   }
 
-  // Sumber demo halaman publik saja; data admin tidak berasal dari sini.
-  const seeds = [...(window.TumbuhSeedArticles || []), ...sampleArticles];
-  const assetBase = new URL("../", document.currentScript.src);
-  function readJson(key, fallback) {
-    try {
-      return JSON.parse(localStorage.getItem(key)) ?? fallback;
-    } catch {
-      return fallback;
-    }
-  }
-  function normalise(article) {
-    const text = (key) => String(article[key] || "");
-    const cover = text("cover");
-    return {
-      id: text("id"),
-      title: text("title"),
-      subtitle: text("subtitle"),
-      author: text("author"),
-      email: text("email"),
-      date: text("date"),
-      status: STATUS[article.status] ? article.status : "pending",
-      cover:
-        /^data:image\/jpeg;base64,/.test(cover) ||
-        /^(?:\.\.\/)?assets\/artikel-[123]\.jpg$/.test(cover)
-          ? cover
-          : "",
-      content: sanitizeArticleHtml(article.content),
-    };
-  }
   function readLocalArticles() {
-    const raw = readJson(STORAGE_KEY, []);
-    return Array.isArray(raw)
-      ? raw
-          .filter(
-            (a) => a && typeof a.id === "string" && a.id.startsWith("local-"),
-          )
-          .map(normalise)
-      : [];
-  }
-  function readOverrides() {
-    const raw = readJson(STORAGE_KEY + ":edits", {});
-    return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
-  }
-  function all() {
-    const overrides = readOverrides();
-    const legacyStatuses = readJson(STORAGE_KEY + ":sample-status", {});
-    const samples = seeds
-      .filter((a) => !overrides[a.id]?.deleted)
-      .map((a) =>
-        normalise({
-          ...a,
-          status: legacyStatuses?.[a.id] || a.status,
-          ...overrides[a.id],
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .filter(
+          (a) => a && typeof a.id === "string" && a.id.startsWith("local-"),
+        )
+        .map((a) => ({
           id: a.id,
-        }),
-      );
-    return [...readLocalArticles().reverse(), ...samples];
+          title: String(a.title || ""),
+          subtitle: String(a.subtitle || ""),
+          author: String(a.author || ""),
+          email: String(a.email || ""),
+          date: String(a.date || ""),
+          status: STATUS[a.status] ? a.status : "pending",
+          cover:
+            typeof a.cover === "string" &&
+            /^data:image\/jpeg;base64,/.test(a.cover)
+              ? a.cover
+              : "",
+          content: sanitizeArticleHtml(a.content || ""),
+        }));
+    } catch {
+      return [];
+    }
   }
   function saveLocalArticle(article) {
-    const clean = normalise(article);
-    if (seeds.some((a) => a.id === clean.id)) {
-      const overrides = readOverrides();
-      overrides[clean.id] = clean;
-      localStorage.setItem(STORAGE_KEY + ":edits", JSON.stringify(overrides));
-    } else {
-      const list = readLocalArticles();
-      const index = list.findIndex((a) => a.id === clean.id);
-      if (index >= 0) list[index] = clean;
-      else list.push(clean);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    const list = readLocalArticles();
+    list.push(article);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  function setDemoStatus(id, status) {
+    if (!STATUS[status]) return false;
+    if (id.startsWith("sample-")) {
+      // Status contoh disimpan tersendiri agar tetap dapat diuji.
+      const stored = JSON.parse(
+        localStorage.getItem(STORAGE_KEY + ":sample-status") || "{}",
+      );
+      stored[id] = status;
+      localStorage.setItem(
+        STORAGE_KEY + ":sample-status",
+        JSON.stringify(stored),
+      );
+      return true;
     }
+    const items = readLocalArticles();
+    const target = items.find((a) => a.id === id);
+    if (!target) return false;
+    target.status = status;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    return true;
   }
-  function safeImageSrc(article) {
-    if (article.cover.startsWith("data:image/jpeg;base64,"))
-      return article.cover;
-    return article.cover
-      ? new URL(article.cover.replace(/^\.\.\//, ""), assetBase).href
-      : "";
+  function applyDemoStatus(samples) {
+    let overrides = {};
+    try {
+      overrides =
+        JSON.parse(
+          localStorage.getItem(STORAGE_KEY + ":sample-status") || "{}",
+        ) || {};
+    } catch {}
+    return samples.map((a) => ({
+      ...a,
+      status: STATUS[overrides[a.id]] ? overrides[a.id] : a.status,
+    }));
   }
-  window.TumbuhArticles = {
-    all,
-    published: () => all().filter((a) => a.status === "published"),
-    imageSrc: safeImageSrc,
-    sanitize: sanitizeArticleHtml,
-    escapeHtml,
-  };
+  function all() {
+    return [
+      ...readLocalArticles().reverse(),
+      ...applyDemoStatus(sampleArticles),
+    ];
+  }
+
+  function safeImageSrc(a) {
+    if (a.id.startsWith("sample-")) return a.cover;
+    return a.cover && /^data:image\/jpeg;base64,/.test(a.cover) ? a.cover : "";
+  }
+  function formatStatus(status) {
+    const entry = STATUS[status] || STATUS.pending;
+    return `<span class="review-status ${entry.css}">● ${escapeHtml(entry.label)}</span>`;
+  }
+
+  function setupDashboard() {
+    const list = document.getElementById("review-list");
+    if (!list) return;
+    const tabs = Array.from(document.querySelectorAll("[data-filter]"));
+    const empty = document.getElementById("review-empty");
+    let filter = "semua";
+    function render() {
+      const articles = all();
+      const count = document.getElementById("pending-count");
+      if (count)
+        count.textContent = String(
+          articles.filter((a) => a.status === "pending").length,
+        );
+      const visible =
+        filter === "semua"
+          ? articles
+          : articles.filter((a) => a.status === filter);
+      list.innerHTML = visible
+        .map(
+          (
+            a,
+          ) => `<article class="review-item" data-status="${escapeHtml(a.status)}">
+        <div class="review-thumb">${safeImageSrc(a) ? `<img src="${safeImageSrc(a)}" alt="Gambar sampul ${escapeHtml(a.title)}">` : ""}</div>
+        <div class="review-desc">${formatStatus(a.status)}
+          <h3>${escapeHtml(a.title)}</h3>
+          <p>${escapeHtml(a.author)} · ${escapeHtml(a.date)}</p>
+          <p>${escapeHtml(a.subtitle)}</p>
+        </div>
+        <a class="review-action" href="preview.html?id=${encodeURIComponent(a.id)}">Tinjau artikel lengkap ↗</a>
+      </article>`,
+        )
+        .join("");
+      if (empty) empty.hidden = visible.length !== 0;
+    }
+    tabs.forEach((button) =>
+      button.addEventListener("click", () => {
+        filter = button.dataset.filter;
+        tabs.forEach((x) => x.classList.toggle("active", x === button));
+        render();
+      }),
+    );
+    render();
+  }
+
+  function setupPreview() {
+    const wrap = document.getElementById("admin-preview-article");
+    if (!wrap) return;
+    const id = new URLSearchParams(location.search).get("id") || "sample-gizi";
+    let article = all().find((a) => a.id === id);
+    if (!article) {
+      document.getElementById("preview-not-found").hidden = false;
+      return;
+    }
+    const $ = (id) => document.getElementById(id);
+    function render() {
+      article = all().find((a) => a.id === id) || article;
+      document.title = `Tinjau: ${article.title} — TUMBUH`;
+      $("preview-title").textContent = article.title;
+      $("preview-subtitle").textContent = article.subtitle;
+      $("preview-meta").textContent =
+        `${article.date.toUpperCase()}   •   ${article.author.toUpperCase()}`;
+      const cover = $("preview-cover");
+      cover.alt = `Gambar utama artikel: ${article.title}`;
+      const source = safeImageSrc(article);
+      cover.src = source;
+      cover.hidden = !source;
+      cover.closest(".admin-preview-image").hidden = !source;
+      $("full-cover-img").src = source;
+      $("show-full-cover").hidden = !source;
+      $("preview-body").innerHTML = sanitizeArticleHtml(article.content);
+      const entry = STATUS[article.status] || STATUS.pending;
+      const status = $("preview-status");
+      status.className = `review-status ${entry.css}`;
+      status.textContent = `● ${entry.label}`;
+      const buttons = $("preview-action-buttons");
+      buttons.hidden = article.status !== "pending";
+      wrap.hidden = false;
+    }
+    async function decide(status) {
+      const label = status === "published" ? "menyetujui" : "menolak";
+      if (
+        !window.confirm(
+          `Yakin ingin ${label} artikel ini pada DEMO lokal? Tindakan ini tidak mempublikasikan artikel di server.`,
+        )
+      )
+        return;
+      try {
+        if (!setDemoStatus(article.id, status))
+          throw new Error("Gagal menyimpan status");
+        const feedback = $("preview-feedback");
+        feedback.hidden = false;
+        feedback.textContent =
+          status === "published"
+            ? "Status di pratinjau lokal berubah menjadi Disetujui. Artikel belum terbit secara online."
+            : "Status di pratinjau lokal berubah menjadi Ditolak. Data belum dikirim ke server.";
+        render();
+        feedback.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } catch (err) {
+        alert("Perubahan status tidak dapat disimpan di browser ini.");
+      }
+    }
+    $("show-full-cover").addEventListener("click", () =>
+      $("full-cover-dialog").showModal(),
+    );
+    $("close-full-cover").addEventListener("click", () =>
+      $("full-cover-dialog").close(),
+    );
+    $("full-cover-dialog").addEventListener("click", (e) => {
+      if (e.target === $("full-cover-dialog")) e.target.close();
+    });
+    $("approve-article").addEventListener("click", () => decide("published"));
+    $("reject-article").addEventListener("click", () => decide("rejected"));
+    render();
+  }
 
   function fileToJpegDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -300,81 +401,25 @@
     const form = document.getElementById("submit-article");
     if (!form) return;
     const note = document.getElementById("submit-message");
-    const body = document.getElementById("content-editor");
-    const cover = document.getElementById("cover-file");
-    const editId = new URLSearchParams(location.search).get("edit");
-    const existing = editId ? all().find((a) => a.id === editId) : null;
-    if (editId && !existing) {
-      note.hidden = false;
-      note.textContent =
-        "Artikel tidak ditemukan. Kembali ke halaman Peninjauan Artikel.";
-      form.querySelectorAll("input, textarea, button").forEach((el) => {
-        el.disabled = true;
-      });
-      body.contentEditable = "false";
-      return;
-    }
-    if (existing) {
-      document.title = "Edit Artikel — TUMBUH (Demo)";
-      document.querySelector(".page-hero h1").textContent =
-        "Sempurnakan artikel sebelum dibagikan.";
-      document.querySelector(".form-card h3").textContent = "Edit artikel";
-      document.getElementById("submit-article-button").textContent =
-        "Simpan Perubahan ↗";
-      document.getElementById("article-edit-back").hidden = false;
-      document.getElementById("article-edit-back").href =
-        `${routes.preview}?id=${encodeURIComponent(editId)}`;
-      document.getElementById("article-form-intro").textContent =
-        "Perubahan tersimpan pada demo browser ini. Status artikel dipertahankan saat memilih Simpan Perubahan.";
-      for (const key of ["author", "email", "title", "subtitle"])
-        form.elements[key].value = existing[key];
-      body.innerHTML = sanitizeArticleHtml(existing.content);
-      cover.required = false;
-      document.getElementById("cover-help").textContent =
-        "Gambar utama sudah tersedia. Unggah satu gambar baru hanya jika ingin menggantinya.";
-      document.getElementById("cover-preview").src = safeImageSrc(existing);
-      document.getElementById("cover-preview").hidden = false;
-    }
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!form.reportValidity()) return;
+      const body = document.getElementById("content-editor");
+      const cover = document.getElementById("cover-file");
       note.hidden = false;
       if (!body || body.innerText.trim().length < 25) {
         note.textContent =
           "Isi artikel minimal 25 karakter agar dapat ditinjau lengkap.";
         return;
       }
-      if (cover.files.length > 1 || (!existing && cover.files.length !== 1)) {
+      if (cover.files.length !== 1) {
         note.textContent = "Unggah tepat satu gambar sampul.";
         return;
       }
-      if (
-        !form.elements.author.value.trim() ||
-        !form.elements.title.value.trim() ||
-        form.elements.subtitle.value.trim().length < 12
-      ) {
-        note.textContent =
-          "Nama dan judul wajib diisi. Subjudul minimal 12 karakter.";
-        return;
-      }
-      const status =
-        event.submitter?.value === "draft"
-          ? "draft"
-          : existing?.status || "pending";
-      const submitButtons = form.querySelectorAll('button[type="submit"]');
-      submitButtons.forEach((button) => {
-        button.disabled = true;
-      });
-      note.textContent = "Menyimpan artikel ke pratinjau browser...";
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      note.textContent = "Menyimpan pratinjau artikel ke browser...";
       try {
-        // Hindari membuat ulang artikel yang sudah dihapus dari tab admin lain.
-        if (existing && !all().some((a) => a.id === editId))
-          throw new Error(
-            "Artikel sudah dihapus. Kembali ke halaman peninjauan.",
-          );
-        const coverData = cover.files.length
-          ? await fileToJpegDataUrl(cover.files[0])
-          : existing.cover;
+        const coverDataUrl = await fileToJpegDataUrl(cover.files[0]);
         const sanitized = sanitizeArticleHtml(body.innerHTML);
         const plain = new DOMParser()
           .parseFromString(sanitized, "text/html")
@@ -382,45 +427,41 @@
         if (plain.length < 25)
           throw new Error("Isi artikel terlalu pendek setelah diproses.");
         const article = {
-          id:
-            existing?.id ||
-            `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          status,
-          author: form.elements.author.value.trim(),
-          email: form.elements.email.value.trim(),
-          title: form.elements.title.value.trim(),
-          subtitle: form.elements.subtitle.value.trim(),
-          date:
-            existing?.date ||
-            new Intl.DateTimeFormat("id-ID", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }).format(new Date()),
-          cover: coverData,
+          id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          status: "pending",
+          author: form.author.value.trim(),
+          email: form.email.value.trim(),
+          title: form.title.value.trim(),
+          subtitle: form.subtitle.value.trim(),
+          date: new Intl.DateTimeFormat("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          }).format(new Date()),
+          cover: coverDataUrl,
           content: sanitized,
         };
         saveLocalArticle(article);
-        if (existing) {
-          note.textContent = "Perubahan demo tersimpan di browser ini; tidak dikirim ke dashboard admin.";
-          return;
-        }
         form.reset();
         body.innerHTML = "";
-        document.getElementById("cover-preview").hidden = true;
-        document.getElementById("cover-preview").removeAttribute("src");
-        note.textContent = `${status === "draft" ? "Draf tersimpan!" : "Artikel demo tersimpan!"} Data hanya tersimpan di browser ini dan belum dikirim ke dashboard admin.`;
-      } catch (error) {
-        note.textContent = `Belum berhasil menyimpan: ${error.message || "Penyimpanan browser tidak tersedia."}`;
+        const imagePreview = document.getElementById("cover-preview");
+        if (imagePreview) {
+          imagePreview.hidden = true;
+          imagePreview.removeAttribute("src");
+        }
+        note.innerHTML =
+          "<strong>Artikel tersimpan untuk pratinjau!</strong> Judul, gambar, dan seluruh isi artikel disimpan di browser ini. Kamu bisa memeriksanya dari halaman admin <em>Peninjauan Artikel</em>. Ini belum dikirim ke server atau admin sungguhan.";
+      } catch (err) {
+        note.textContent = `Belum berhasil menyimpan: ${err.message || "Penyimpanan browser tidak tersedia."}`;
       } finally {
-        submitButtons.forEach((button) => {
-          button.disabled = false;
-        });
+        submitButton.disabled = false;
       }
     });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    setupDashboard();
+    setupPreview();
     setupSubmit();
   });
 })();

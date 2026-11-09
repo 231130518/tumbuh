@@ -3,6 +3,7 @@
   "use strict";
   const api = window.TumbuhSupabase;
   const articles = window.TumbuhAdminArticles;
+  const loading = window.TumbuhArticleLoading;
   const routes = window.TumbuhRoutes;
   const $ = (id) => document.getElementById(id);
   const loginPage = document.body.dataset.page === "admin-login";
@@ -20,6 +21,7 @@
   let filter = "pending";
   let page = 0;
   let currentArticle = null;
+  let actionBusy = false;
 
   function notice(element, message, error = false) {
     if (!element) return;
@@ -43,6 +45,8 @@
     currentArticle = null;
     if (content) { content.hidden = true; content.inert = true; }
     if ($("review-list")) $("review-list").replaceChildren();
+    loading?.finish($("review-list"));
+    loading?.finish($("preview-skeleton"));
     if ($("pending-count")) $("pending-count").textContent = "0";
     for (const id of ["preview-title", "preview-subtitle", "preview-meta", "preview-email", "preview-body", "preview-feedback"]) {
       $(id)?.replaceChildren();
@@ -141,8 +145,7 @@
     const version = generation;
     const request = ++requestNumber;
     const list = $("review-list");
-    list.replaceChildren();
-    list.setAttribute("aria-busy", "true");
+    loading.show(list, "review", 3);
     $("review-empty").hidden = true;
     $("review-pagination").hidden = true;
     notice($("review-feedback"), "Memuat artikel…");
@@ -163,7 +166,7 @@
     } catch (error) {
       if (version === generation && request === requestNumber) await dataFailure(error, $("review-feedback"));
     } finally {
-      if (request === requestNumber) list.removeAttribute("aria-busy");
+      if (request === requestNumber) loading.finish(list);
     }
   }
 
@@ -194,6 +197,7 @@
     $("reject-article").hidden = article.status === "rejected";
     $("approve-article").disabled = !articles.statuses[article.status];
     $("reject-article").disabled = !articles.statuses[article.status];
+    $("delete-article").disabled = !articles.statuses[article.status];
     $("admin-preview-article").hidden = false;
     window.TumbuhAOS?.refresh();
   }
@@ -204,27 +208,33 @@
     const request = ++requestNumber;
     currentArticle = null;
     $("admin-preview-article").hidden = true;
+    $("admin-preview-article").classList.remove("article-loaded");
     $("preview-not-found").hidden = true;
     $("preview-email").hidden = true;
     $("preview-status").textContent = "";
     notice($("preview-load-message"), "Memuat artikel…");
+    loading.show($("preview-skeleton"), "detail", 1);
     try {
       const article = await articles.get(new URLSearchParams(location.search).get("id"));
       if (!verified || version !== generation || request !== requestNumber) return;
       notice($("preview-load-message"), "");
       if (!article) { $("preview-not-found").hidden = false; return; }
       renderPreview(article);
+      loading.finish($("admin-preview-article"));
     } catch (error) {
       if (version === generation && request === requestNumber) await dataFailure(error, $("preview-load-message"));
+    } finally {
+      if (version === generation && request === requestNumber) loading.finish($("preview-skeleton"));
     }
   }
 
   async function decide(status) {
-    if (!verified || !currentArticle) return;
+    if (!verified || !currentArticle || actionBusy) return;
     if (!confirm(`Yakin ingin ${status === "published" ? "menerbitkan" : "menolak"} artikel ini? Status akan disimpan di database.`)) return;
     const version = generation;
     const article = currentArticle;
-    const buttons = [$("approve-article"), $("reject-article"), $("preview-reload")];
+    actionBusy = true;
+    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload")];
     buttons.forEach((button) => { button.disabled = true; });
     notice($("preview-feedback"), "Menyimpan keputusan…");
     try {
@@ -235,6 +245,31 @@
     } catch (error) {
       if (version === generation) await dataFailure(error, $("preview-feedback"));
     } finally {
+      actionBusy = false;
+      buttons.forEach((button) => { button.disabled = false; });
+    }
+  }
+
+  async function deleteArticle() {
+    if (!verified || !currentArticle || actionBusy) return;
+    const article = currentArticle;
+    if (!confirm(`Hapus artikel “${article.title}” secara permanen? Artikel akan hilang dari dashboard dan halaman publik. Tindakan ini tidak dapat dibatalkan.`)) return;
+    const version = generation;
+    actionBusy = true;
+    const buttons = [$("approve-article"), $("reject-article"), $("delete-article"), $("preview-reload")];
+    buttons.forEach((button) => { button.disabled = true; });
+    $("delete-article").textContent = "Menghapus…";
+    notice($("preview-feedback"), "Menghapus artikel…");
+    try {
+      await articles.remove(article.id, article.status);
+      if (!verified || version !== generation) return;
+      currentArticle = null;
+      location.replace(routes.dashboard);
+    } catch (error) {
+      if (version === generation) await dataFailure(error, $("preview-feedback"));
+    } finally {
+      actionBusy = false;
+      $("delete-article").textContent = "Hapus Artikel";
       buttons.forEach((button) => { button.disabled = false; });
     }
   }
@@ -367,6 +402,7 @@
     $("review-next")?.addEventListener("click", () => { page += 1; loadList(); });
     $("approve-article")?.addEventListener("click", () => decide("published"));
     $("reject-article")?.addEventListener("click", () => decide("rejected"));
+    $("delete-article")?.addEventListener("click", deleteArticle);
     $("show-full-cover")?.addEventListener("click", () => { if (verified && currentArticle) $("full-cover-dialog").showModal(); });
     $("close-full-cover")?.addEventListener("click", () => $("full-cover-dialog").close());
     $("full-cover-dialog")?.addEventListener("click", (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });

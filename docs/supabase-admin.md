@@ -38,7 +38,7 @@ Mount `/tumbuh/` tetap didukung oleh jalur relatif. Jangan mengubah semua rute m
 
 Semua data asli diambil dari `public.articles`. ID `int8` dipilih sebagai `id::text` agar ID besar tidak dibulatkan oleh JavaScript. List hanya mengambil kolom yang diperlukan, tidak mengambil email penulis atau seluruh isi artikel. Email hanya ditampilkan pada pratinjau admin setelah verifikasi. Gambar menggunakan bucket `articles-images`; `cover_image_path` sebaiknya berupa path objek, misalnya `covers/uuid-gambar.webp`. URL publik dari bucket/proyek yang sama juga diterima; URL eksternal, SVG, dan traversal path ditolak.
 
-Tombol edit/draf/hapus tetap berada di UI, tetapi dinonaktifkan dan diberi keterangan belum tersedia. Ketiga fitur itu tidak mengirim operasi Supabase; skema hanya mendukung `pending`, `published`, `rejected`. Approve/reject hanya mengirim kolom `status`, dengan syarat ID dan status sebelumnya masih sama. Jika artikel telah diubah tab/admin lain atau RLS menolak baris, aplikasi tidak melaporkan sukses; muat ulang artikel sebelum mengambil keputusan lagi.
+Tombol edit/draf tetap berada di UI, tetapi dinonaktifkan dan diberi keterangan belum tersedia. Kedua fitur itu tidak mengirim operasi Supabase; skema hanya mendukung `pending`, `published`, `rejected`. Approve/reject hanya mengirim kolom `status`, dengan syarat ID dan status sebelumnya masih sama. Jika artikel telah diubah tab/admin lain atau RLS menolak baris, aplikasi tidak melaporkan sukses; muat ulang artikel sebelum mengambil keputusan lagi.
 
 ## Lapisan keamanan
 
@@ -95,18 +95,22 @@ Untuk uji API akun biasa tanpa membagikan token: login akun uji tersebut di klie
 
 Pemeriksaan asli yang telah dilakukan hanya: SELECT terbatas/tanpa baris pada tabel dan PATCH anonim dengan filter `id IS NULL` (tidak mungkin cocok dengan primary key). Semua ditolak dengan `401 / permission denied`. Tidak ada pengujian login admin/non-admin asli atau perubahan artikel produksi yang diklaim berhasil.
 
-## Pekerjaan publik yang belum dihubungkan
+## Integrasi publik dan pekerjaan tersisa
 
-Halaman beranda, daftar/baca artikel publik, form pengiriman, dan unggah gambar masih memakai demo lokal seperti sebelumnya. Status `published` di database belum otomatis muncul pada feed demo. Pesan setelah penyimpanan demo kini menjelaskan bahwa data belum dikirim ke admin; tidak ada tautan ID demo menuju pratinjau database.
+Form tanpa login, upload gambar maksimal 5 MB, retry, serta feed/detail `published` sudah terhubung pada kode. Aktifkan izin server melalui audit dan `supabase/04-public-articles.sql`, lalu lakukan pengujian asli sesuai [panduan pengiriman publik](supabase-submissions.md). Suite browser menggunakan endpoint simulasi; hasilnya tidak membuktikan RLS produksi.
 
-Langkah berikutnya, tanpa membuka UPDATE/DELETE umum:
+Pekerjaan operasional tersisa: verifikasi akun dan policy produksi, perlindungan spam melalui CAPTCHA yang diverifikasi server/rate limit, serta pembersihan gambar yatim menggunakan Storage API berizin. Tidak ada push/deploy otomatis. Model pertumbuhan DNN bukan bagian dari integrasi artikel ini.
 
-1. Tentukan apakah pengirim artikel wajib login atau boleh anonim. Buat alur INSERT terbatas dengan status paksa `pending`, validasi kolom, batas panjang, dan perlindungan spam/rate limit/CAPTCHA. Untuk pengiriman anonim, fungsi Supabase Edge Function dapat memvalidasi request tanpa menaruh secret di frontend; audit RLS/grants tetap diperlukan.
-2. Hubungkan unggah ke `articles-images`, maksimal **5 MB** dengan MIME JPG/PNG/WebP. Form demo saat ini masih mengizinkan 8 MB untuk konversi lokal; ubah validasi client DAN kebijakan bucket/server saat integrasi upload dilakukan.
-3. Gunakan nama objek acak dan folder kepemilikan yang diverifikasi server. Batasi INSERT objek dan cegah overwrite/delete objek milik orang lain. Simpan hanya path objek pada `cover_image_path`.
-4. Tangani upload yang sukses tetapi INSERT artikel gagal (pembersihan objek yatim yang berizin), retry/idempotensi, dan validasi isi file; ekstensi/MIME dari browser saja tidak cukup.
-5. Hubungkan feed publik ke artikel `published` dengan sanitasi yang sama dan proyeksi kolom aman. Jangan memberi SELECT seluruh baris publik jika `author_email` harus tetap privat: RLS membatasi baris, bukan kolom. Tinjau column grants atau endpoint/view yang aman dan benar-benar menerapkan RLS. Jangan sekadar tidak merender email di UI.
-6. Migrasi demo `localStorage`, penyuntingan, draf (bila akan ditambahkan ke skema), dan penghapusan membutuhkan rancangan terpisah; jangan menyamakan ID demo dengan ID database.
+## Mengaktifkan Hapus Artikel
+
+Tombol Hapus Artikel pada pratinjau meminta konfirmasi permanen, memverifikasi ulang sesi dan keanggotaan admin, lalu DELETE berdasarkan ID dan status terakhir. Jika server tidak mengonfirmasi baris terhapus, halaman tetap terbuka dengan pesan gagal. Setelah berhasil, kembali ke dashboard. Data artikel dihapus permanen; file gambar Storage tetap ada untuk pembersihan terpisah agar tidak menghapus gambar yang mungkin dipakai artikel lain.
+
+1. Tinjau audit `supabase/01-audit-access.sql`, terutama policy DELETE/ALL dan hak tulis `admin_users`.
+2. Buka Supabase → SQL Editor → New query, salin isi `supabase/05-admin-delete.sql`, lalu Run. SQL hanya menambah izin dan policy DELETE khusus admin, tidak menghapus data, tidak membuat ulang tabel/bucket, dan tidak mematikan RLS. Policy restrictive mencegah akun biasa menghapus walaupun ada policy permissive lain. Policy SELECT artikel/membership yang sudah berfungsi tetap diperlukan.
+3. Pada versi situs yang memuat perubahan ini, login admin dan gunakan **artikel uji**: klik Hapus lalu Batal (artikel tetap ada); klik lagi lalu konfirmasi (kembali ke dashboard, artikel hilang dari daftar dan URL publik setelah dimuat ulang).
+4. Uji request DELETE langsung memakai akun non-admin dan anon terhadap artikel uji: baris tidak boleh terhapus. Jangan menganggap HTTP 200 sebagai bukti berhasil; RLS bisa menghasilkan nol baris. Pengujian produksi ini belum dijalankan oleh implementasi.
+
+Implementasi memakai [`delete()` SDK resmi](https://supabase.com/docs/reference/javascript/delete) dan meminta ID baris yang dihapus untuk memastikan hasilnya. Pengujian browser mencakup batal, berhasil, izin ditolak, nol baris, dan keanggotaan dicabut. Tidak ada penghapusan data produksi atau push otomatis.
 
 ## Sumber resmi
 

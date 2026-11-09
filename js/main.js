@@ -1,37 +1,3 @@
-const articleData = [
-  {
-    title: "Inspirasi makanan sehat dan bergizi untuk si kecil.",
-    excerpt:
-      "Ide sederhana membuat waktu makan lebih menyenangkan, dengan pilihan menu beragam yang mudah dipahami keluarga.",
-    image: "assets/artikel-1.jpg",
-    date: "29 Oktober 2026",
-    author: "FITRI NOVITASARI BR MANALU",
-  },
-  {
-    title: "Kenali indikator pertumbuhan anak",
-    excerpt:
-      "Kenali tiga indeks yang membantu orang tua memahami pertumbuhan balita.",
-    image: "assets/artikel-2.jpg",
-    date: "05 November 2026",
-    author: "Tim Edukasi TUMBUH",
-  },
-  {
-    title: "Panduan menimbang berat badan balita",
-    excerpt:
-      "Pelajari langkah pengukuran agar hasil pemantauan lebih konsisten.",
-    image: "assets/artikel-3.jpg",
-    date: "02 November 2026",
-    author: "Tim Edukasi TUMBUH",
-  },
-  {
-    title: "Menu seimbang untuk hari-hari sibuk",
-    excerpt:
-      "Ide membuat variasi menu sederhana dari bahan yang mudah ditemukan.",
-    image: "assets/artikel-1.jpg",
-    date: "22 Oktober 2026",
-    author: "Tim Edukasi TUMBUH",
-  },
-];
 // Lokasi script menjadi acuan: bekerja pada domain sendiri maupun /tumbuh/.
 const rootPath = new URL("../", document.currentScript.src).pathname;
 const routes = {
@@ -192,109 +158,6 @@ function sectionNavigation() {
     });
     window.setTimeout(reveal, 6000);
   } else reveal();
-}
-
-// Artikel contoh lama dipertahankan dan dibagikan ke penyimpanan demo admin.
-window.TumbuhSeedArticles = articleData.map((a, i) => ({
-  id: String(i),
-  status: "published",
-  title: a.title,
-  subtitle: a.excerpt,
-  author: a.author,
-  date: a.date,
-  email: "",
-  cover: a.image,
-  content:
-    i === 0
-      ? `<span class="article-section-bar" aria-hidden="true"></span>
-      <h2>Membangun kebiasaan makan yang sehat</h2>
-      <p>Masa balita adalah waktu penting untuk mengenalkan berbagai rasa, tekstur, dan jenis makanan. Menu yang beragam dapat membantu keluarga memenuhi kebutuhan gizi sekaligus membuat anak semakin tertarik mencoba makanan baru.</p>
-      <p>Mulailah dari bahan yang mudah ditemukan: sumber karbohidrat, lauk berprotein, sayuran berwarna, buah, dan air minum yang cukup. Sajikan dalam porsi yang sesuai usia dan kemampuan makan anak.</p>
-      <h3>Tiga hal sederhana yang bisa dicoba</h3>
-      <ol class="article-step-list">
-        <li><div class="article-step-num">01</div><div><strong>Variasikan warna dan bentuk</strong><p>Susun menu dari bahan berwarna berbeda agar makanan terlihat menarik.</p></div></li>
-        <li><div class="article-step-num">02</div><div><strong>Bangun jadwal makan rutin</strong><p>Upayakan waktu makan yang konsisten dan suasana yang menyenangkan.</p></div></li>
-        <li><div class="article-step-num">03</div><div><strong>Ajak anak mencoba</strong><p>Kenalkan makanan baru secara bertahap tanpa memaksa anak menghabiskannya.</p></div></li>
-      </ol>
-      <p class="article-disclaimer">Setiap anak berkembang dengan cara berbeda. Gunakan artikel sebagai inspirasi, bukan sebagai pengganti saran ahli gizi atau tenaga kesehatan.</p>`
-      : `<span class="article-section-bar" aria-hidden="true"></span>
-      <h2>${a.title}</h2>
-      <p>${a.excerpt}</p>
-      <p>Pertumbuhan anak berlangsung melalui banyak perubahan kecil yang saling berkaitan. Orang tua dapat mendukungnya dengan memperhatikan kebutuhan gizi dan melakukan pemantauan secara rutin.</p>
-      <h3>Hal yang perlu diperhatikan</h3>
-      <ol class="article-step-list">
-      <li><div class="article-step-num">01</div><div><strong>Pantau secara berkala</strong><p>Catat perubahan pertumbuhan anak dengan cara pengukuran yang konsisten.</p></div></li>
-      <li><div class="article-step-num">02</div><div><strong>Kenali kebutuhan anak</strong><p>Perhatikan asupan makan, aktivitas dan istirahat sesuai usianya.</p></div></li>
-      <li><div class="article-step-num">03</div><div><strong>Konsultasikan bila perlu</strong><p>Hubungi tenaga kesehatan jika membutuhkan penjelasan lebih lanjut.</p></div></li>
-      </ol>
-      <p class="article-disclaimer">Contoh artikel pratinjau antarmuka. Konten final nantinya berasal dari artikel yang disetujui.</p>`,
-}));
-
-function cards() {
-  const store = window.TumbuhArticles;
-  if (!store) return;
-  const escape = store.escapeHtml;
-  const articles = store.published();
-  const url = (article) =>
-    `${routes.article}?id=${encodeURIComponent(article.id)}`;
-  const card = (article) => `<article class="article-card">
-    <a href="${url(article)}"><img src="${escape(store.imageSrc(article))}" alt="${escape(article.title)}" loading="lazy"></a>
-    <div class="article-body"><h3><a href="${url(article)}">${escape(article.title)}</a></h3>
-      <p>${escape(article.subtitle)}</p><div class="article-meta">
-      <a href="${url(article)}">Baca selengkapnya ↗</a><span>${escape(article.date)}</span></div></div>
-    </article>`;
-  const home = document.getElementById("home-articles");
-  if (home) home.innerHTML = articles.slice(0, 3).map(card).join("");
-  const list = document.getElementById("article-list");
-  if (list) {
-    const render = (query = "") => {
-      const matching = articles.filter((a) =>
-        `${a.title} ${a.subtitle}`.toLowerCase().includes(query.toLowerCase()),
-      );
-      list.innerHTML =
-        matching.map(card).join("") ||
-        "<p>Belum ada artikel dengan kata kunci tersebut.</p>";
-    };
-    render();
-    document.getElementById("article-search").oninput = (e) =>
-      render(e.target.value);
-  }
-  const detail = document.getElementById("article-detail");
-  if (!detail) return;
-  const id = new URLSearchParams(location.search).get("id") || "0";
-  const article = articles.find((a) => a.id === id);
-  if (!article) {
-    document.getElementById("article-hero-title").textContent =
-      "Artikel tidak tersedia.";
-    document.getElementById("article-hero-subtitle").textContent =
-      "Artikel belum diterbitkan atau sudah dihapus dari pratinjau ini.";
-    document.getElementById("article-hero-meta").textContent = "";
-    document.querySelector(".article-cover-banner").hidden = true;
-    document.querySelector(".article-latest").hidden = true;
-    detail.innerHTML = `<a class="btn" href="${routes.articles}">Kembali ke daftar artikel ↗</a>`;
-    return;
-  }
-  document.title = `${article.title} — TUMBUH`;
-  document.getElementById("article-hero-title").textContent = article.title;
-  document.getElementById("article-hero-subtitle").textContent =
-    article.subtitle;
-  document.getElementById("article-hero-meta").textContent =
-    `${article.date.toUpperCase()}   •   ${article.author.toUpperCase()}`;
-  const cover = document.getElementById("article-cover-image");
-  cover.src = store.imageSrc(article);
-  cover.alt = `Gambar utama: ${article.title}`;
-  detail.innerHTML = `<span class="article-section-bar" aria-hidden="true"></span>${store.sanitize(article.content)}`;
-  const recommendations = document.getElementById("article-recommendations");
-  recommendations.innerHTML = articles
-    .filter((a) => a.id !== id)
-    .slice(0, 3)
-    .map(
-      (a) => `<article class="latest-entry">
-    <a class="latest-cover" href="${url(a)}"><img src="${escape(store.imageSrc(a))}" alt="${escape(a.title)}" loading="lazy"></a>
-    <div class="latest-text"><h3><a href="${url(a)}">${escape(a.title)}</a></h3><a class="latest-link" href="${url(a)}">Baca artikel ↗</a></div>
-  </article>`,
-    )
-    .join("");
 }
 
 // Data pemeriksaan hanya bertahan dalam sesi tab, terpisah dari artikel.
@@ -476,9 +339,9 @@ function editor() {
     if (!image) return;
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(image.type) ||
-      image.size > 8 * 1024 * 1024
+      image.size > 5 * 1024 * 1024
     ) {
-      alert("Pilih satu gambar JPG, PNG, atau WEBP berukuran maksimal 8 MB.");
+      alert("Pilih satu gambar JPG, PNG, atau WEBP berukuran maksimal 5 MB.");
       file.value = "";
       return;
     }
@@ -492,13 +355,8 @@ document.addEventListener("DOMContentLoaded", () => {
   header();
   footer();
   sectionNavigation();
-  cards();
   growthForm();
   growthResults();
   editor();
 
-});
-// Sinkronkan daftar publik setelah status demo diubah dari tab lain.
-window.addEventListener("storage", (event) => {
-  if (event.key?.startsWith("tumbuh-frontend-articles-v1")) cards();
 });

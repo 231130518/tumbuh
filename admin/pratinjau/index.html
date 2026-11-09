@@ -67,6 +67,7 @@
         <p id="preview-load-message" role="status"></p>
         <button class="btn outline" id="preview-reload" type="button">Muat ulang artikel</button>
       </div>
+      <div class="wrap" id="preview-skeleton"></div>
       <div id="admin-preview-article" hidden>
         <section class="admin-preview-hero">
           <div class="wrap admin-preview-hero-inner">
@@ -125,8 +126,8 @@
               <span class="eyebrow">SELESAI MEMBACA?</span>
               <h2>Ambil keputusan setelah membaca seluruh artikel.</h2>
               <p id="review-decision-note">
-                Keputusan akan memperbarui status artikel. Pengeditan, draf,
-                dan penghapusan belum tersedia.
+                Setujui atau tolak untuk memperbarui status artikel.
+                Hapus Artikel akan menghapus artikel secara permanen.
               </p>
             </div>
             <div class="admin-preview-buttons" id="preview-action-buttons">
@@ -140,7 +141,7 @@
               <button class="btn outline" type="button" id="reject-article">
                 ✕ Tolak Artikel
               </button>
-              <button class="btn danger" type="button" id="delete-article" disabled title="Penghapusan belum tersedia">
+              <button class="btn danger" type="button" id="delete-article">
                 Hapus Artikel
               </button>
             </div>
@@ -171,6 +172,8 @@
     <script src="../../js/vendor/purify-3.4.17.min.js" defer></script>
     <script src="../../js/supabase-config.js" defer></script>
     <script src="../../js/supabase-client.js" defer></script>
+    <script src="../../js/article-content.js" defer></script>
+    <script src="../../js/article-loading.js" defer></script>
     <script src="../../js/admin-articles.js" defer></script>
     <script src="../../js/admin.js" defer></script>
     <script

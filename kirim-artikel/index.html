@@ -42,6 +42,8 @@
                     id="author"
                     name="author"
                     placeholder="Nama lengkap"
+                    minlength="2"
+                    maxlength="100"
                     required
                   />
                 </div>
@@ -51,6 +53,7 @@
                     id="email"
                     name="email"
                     type="email"
+                    maxlength="254"
                     placeholder="nama@email.com"
                   />
                 </div>
@@ -59,6 +62,7 @@
                   ><input
                     id="title"
                     name="title"
+                    minlength="5"
                     maxlength="150"
                     placeholder="Judul yang menarik dan informatif"
                     required
@@ -71,6 +75,7 @@
                     name="subtitle"
                     rows="2"
                     minlength="12"
+                    maxlength="500"
                     placeholder="Ringkasan singkat tentang isi artikel"
                     required
                     class="article-subtitle-input"
@@ -141,7 +146,7 @@
                   ><label class="upload-zone" for="cover-file"
                     ><strong>↑ Unggah satu gambar artikel</strong
                     ><span id="cover-help"
-                      >JPG / PNG / WEBP, maksimal 8 MB — unggah tepat satu
+                      >JPG / PNG / WEBP, maksimal 5 MB — unggah tepat satu
                       gambar utama.</span
                     ><input
                       type="file"
@@ -156,24 +161,17 @@
                 </div>
               </div>
               <div class="article-form-actions">
-                <button class="btn" type="submit" id="submit-article-button">
+                <button class="btn" type="submit" id="submit-article-button" disabled>
                   Kirim Artikel untuk Ditinjau ↗</button
                 ><button
                   class="btn outline"
-                  type="submit"
-                  name="action"
-                  value="draft"
+                  type="button"
+                  id="save-article-draft"
                 >
                   Simpan Draf
                 </button>
+                <button class="btn outline" type="button" id="restore-article-draft" hidden>Lanjutkan Draf</button>
               </div>
-              <a
-                id="article-edit-back"
-                class="article-edit-back"
-                href="../admin/peninjauan/"
-                hidden
-                >← Kembali tanpa menyimpan</a
-              >
               <div
                 class="notice"
                 id="submit-message"
@@ -191,8 +189,9 @@
                 <li>Admin akan meninjau artikel sebelum diterbitkan.</li>
               </ul>
               <p class="footer-note">
-                Versi pratinjau: artikel disimpan secara lokal di browser ini,
-                belum dikirim ke server atau database.
+                Kiriman akan disimpan dan menunggu peninjauan admin.
+                Tombol Simpan Draf hanya menyimpan teks di browser ini;
+                gambar perlu dipilih kembali saat melanjutkan draf.
               </p>
             </aside>
           </div>
@@ -201,7 +200,12 @@
     </main>
     <div id="site-footer"></div>
     <script src="../js/main.js" defer></script>
-    <script src="../js/review.js" defer></script>
+    <script src="../js/vendor/supabase-2.119.0.js" defer></script>
+    <script src="../js/vendor/purify-3.4.17.min.js" defer></script>
+    <script src="../js/supabase-config.js" defer></script>
+    <script src="../js/supabase-client.js" defer></script>
+    <script src="../js/article-content.js" defer></script>
+    <script src="../js/article-submit.js" defer></script>
     <script
       src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"
       defer
