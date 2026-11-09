@@ -26,7 +26,7 @@ Buka `http://localhost:8000/`. Gunakan alamat dan port yang sama selama menguji 
 - `js/article-submit.js`, `js/article-content.js`: pengiriman ke Storage/`articles`, draf lokal, dan sanitasi bersama.
 - `js/supabase-config.js`, `js/supabase-client.js`: konfigurasi publik, SDK client, dan verifikasi pengguna/keanggotaan admin.
 - `js/admin.js`, `js/admin-articles.js`: sesi admin, guard halaman, query artikel Supabase, sanitasi DOMPurify, dan perubahan status.
-- `docs/supabase-admin.md`, `supabase/`: panduan integrasi, audit baca-saja, SQL opsional, dan pengujian otorisasi.
+- `docs/supabase-admin.md`, `docs/supabase-submissions.md`: konfigurasi dan panduan pemeliharaan integrasi Supabase.
 - `js/loading.js`, `js/aos-tumbuh.js`: loading dan animasi konten.
 - `css/style.css`: tampilan responsif dan animasi.
 
@@ -53,19 +53,19 @@ Navigasi bagian beranda tetap menggunakan anchor sebagai fallback; JavaScript me
 
 Data anak hanya disimpan sementara dalam `sessionStorage` dengan kunci `tumbuh-growth-input-v1`, bukan di database artikel. Usia dihitung dalam bulan penuh pada tanggal pemeriksaan. Format usia untuk model perlu disesuaikan dengan preprocessing final nanti. Halaman hasil tanpa input menampilkan kondisi kosong. Status TB/U, BB/U, dan BB/TB selalu belum tersedia sampai model sungguhan terintegrasi.
 
-Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Fitur edit/draf admin dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin; aktivasi melalui `supabase/05-admin-delete.sql`. Dataset dan model pertumbuhan belum diintegrasikan.
+Beranda, daftar, pencarian, dan detail artikel mengambil data Supabase `published`. Kiriman tanpa login masuk sebagai `pending` untuk ditinjau admin; artikel `rejected` tidak muncul di publik. Draf formulir hanya disimpan lokal. Fitur edit/draf admin dinonaktifkan. Hapus permanen tersedia dengan konfirmasi dan izin khusus admin. Dataset dan model pertumbuhan belum diintegrasikan.
 
 ## Konfigurasi admin Supabase
 
 Konfigurasi publik proyek `ayotumbuh` sudah diisi pada `js/supabase-config.js` (URL dasar, publishable key, dan `adminUserIdColumn: "user_id"`). Jangan menaruh secret/service_role key atau password database di frontend. Tidak ada tabel/akun/bucket/policy produksi yang dibuat ulang.
 
-Baca [panduan Supabase admin](docs/supabase-admin.md) untuk konfigurasi, audit RLS, sembilan pengujian manual, batas verifikasi, dan pemeriksaan keamanan. Periksa RLS dengan akun non-admin asli sebelum publikasi. Pengujian otomatis: `npm install`, `npx playwright install chromium`, lalu `npm run test:admin`. Dependensi Node hanya untuk pengujian; situs tetap tanpa build/backend Node.
+Baca [panduan Supabase admin](docs/supabase-admin.md) untuk konfigurasi, RLS, dan pemeriksaan manual. Situs berjalan tanpa instalasi npm atau proses build. Script pengujian dan SQL setup telah dihapus dari proyek atas permintaan pemilik; arsipnya tetap tersedia pada riwayat Git, commit `058a45d`. Penghapusan file lokal tidak mengubah database, akun, bucket, atau policy yang sudah terpasang di Supabase.
 
 ## Pengiriman artikel publik
 
 Form `/kirim-artikel/` mengunggah satu gambar JPG/PNG/WebP maksimal 5 MB lalu INSERT `pending`, tanpa login pengunjung. Client publik terpisah dari sesi admin. Isian dipertahankan saat gagal dan pesan sukses hanya muncul setelah konfirmasi server.
 
-**Aktivasi server masih diperlukan:** pemeriksaan API terakhir menolak INSERT anonim (`401 / 42501`). Tinjau audit lalu SQL `supabase/04-public-articles.sql`; belum ada policy produksi yang diubah. Lihat [panduan pengiriman](docs/supabase-submissions.md) untuk aktivasi, retry, pengujian nyata, dan batas antispam. SQL tersebut juga membatasi bacaan publik ke artikel `published` tanpa akses kolom email penulis.
+Artikel publik dan penghapusan admin sudah dikonfirmasi berfungsi oleh pemilik. Lihat [panduan pengiriman](docs/supabase-submissions.md) untuk alur, retry, dan pemeliharaan. Izin akses tetap dikelola di Supabase; bacaan publik hanya `published` tanpa kolom email penulis.
 
 ## Acuan yang dipertahankan
 

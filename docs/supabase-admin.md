@@ -1,6 +1,6 @@
 # Admin TUMBUH dengan Supabase
 
-Implementasi tetap berupa HTML/CSS/JavaScript statis untuk GitHub Pages. Tidak ada backend baru, perubahan DNS, tabel, akun admin, bucket, atau policy produksi yang dibuat oleh integrasi ini. Tidak ada git push/deploy otomatis.
+Implementasi tetap berupa HTML/CSS/JavaScript statis untuk GitHub Pages. Tidak ada backend baru, perubahan DNS, tabel, akun admin, bucket, atau policy produksi yang dibuat oleh integrasi ini.
 
 ## Konfigurasi yang dipakai
 
@@ -55,25 +55,13 @@ Tombol edit/draf tetap berada di UI, tetapi dinonaktifkan dan diberi keterangan 
 
 Kode frontend tidak dapat membuktikan bahwa semua policy produksi benar. **Uji non-admin terautentikasi masih wajib sebelum dipakai sungguhan.**
 
-1. Jalankan `supabase/01-audit-access.sql` di SQL Editor. File ini hanya membaca struktur, status RLS, grants, policy, dan konfigurasi bucket.
+1. Periksa struktur, status RLS, grants, policy, dan konfigurasi bucket melalui dashboard Supabase sebelum mengubah izin produksi.
 2. Pastikan `articles` dan `admin_users` memakai RLS; admin dapat SELECT/UPDATE artikel; UPDATE memiliki `USING` dan `WITH CHECK` berdasarkan keanggotaan admin. Tidak boleh ada policy permissive lain yang membuka UPDATE/DELETE untuk umum (policy permissive digabung menggunakan OR).
-3. Admin yang login harus dapat SELECT `admin_users.user_id` miliknya sendiri. Jika ini belum diizinkan, tinjau `supabase/02-membership-select.optional.sql`. File opsional ini menambahkan izin baca kolom UUID dan policy self-read, tidak memberi izin tulis. **Jangan jalankan jika policy yang sesuai sudah ada**, dan periksa policy restrictive lain terlebih dahulu.
+3. Admin yang login harus dapat SELECT `admin_users.user_id` miliknya sendiri. Jika ditolak, tinjau grants dan policy self-read yang sudah ada, termasuk policy restrictive, sebelum melakukan perubahan.
 4. Pengguna frontend tidak boleh dapat menambah/mengubah/menghapus `admin_users` untuk mengangkat dirinya menjadi admin. Audit grants, RLS, fungsi RPC SECURITY DEFINER, dan view yang mengekspos tabel tersebut. Hindari UPDATE/DELETE untuk `anon`; jika hanya status yang dikelola, pertimbangkan grant kolom `UPDATE(status)` setelah memeriksa penggunaan lain.
-5. `supabase/03-test-article-authorization.sql` menguji admin, akun biasa, dan anon pada satu artikel uji yang sudah ada, lalu melakukan ROLLBACK. Isi tiga placeholder dan baca catatannya. Gunakan staging/artikel uji; webhook/efek eksternal trigger mungkin tidak dapat di-rollback. Script ini **belum dijalankan** pada proyek asli.
+5. Uji izin dengan akun admin dan akun biasa terhadap artikel uji. Pembatasan di tampilan tidak menggantikan RLS.
 
-## Pengujian lokal otomatis
-
-`package.json` hanya berisi dependensi **pengembangan/pengujian**, bukan server produksi atau proses build website.
-
-```sh
-npm install
-npx playwright install chromium
-npm run test:admin
-```
-
-Alternatif browser yang sudah terpasang: set `TUMBUH_BROWSER_EXECUTABLE` ke executable Chrome. Lingkungan yang sudah menyediakan Playwright dapat mengisi `TUMBUH_PLAYWRIGHT_MODULE` dengan lokasi modul tersebut.
-
-Suite memakai **SDK browser asli** dan endpoint Auth/PostgREST/Storage simulasi. Semua akun/password di fixture adalah data palsu. Tidak ada login, perubahan status, pembuatan akun, atau perubahan policy pada proyek asli dari suite ini. Hasil JSON dan screenshot tersimpan pada `test-results/` (diabaikan Git). Simulasi membuktikan perilaku aplikasi, **bukan keamanan RLS produksi**.
+Script setup SQL dan pengujian otomatis telah dihapus dari proyek atas permintaan pemilik. Arsipnya tersedia di riwayat Git pada commit `058a45d`. Database dan policy yang sudah terpasang tetap berada di Supabase. Pemeriksaan manual berikut dapat digunakan tanpa dependensi Node.
 
 ## Sembilan pengujian pada proyek asli
 
@@ -89,7 +77,7 @@ Jalankan `python3 -m http.server 8000`, lalu buka `http://localhost:8000/admin/`
 | 6. Logout | Buka dua tab admin, logout dari satu; kedua tab terkunci. Membuka dashboard kembali dan Back tidak mengungkap data lama. |
 | 7. Baca artikel | Cocokkan artikel `pending`, judul/subjudul/penulis/isi/gambar dengan Table Editor. Jangan mengharapkan artikel demo lokal muncul. |
 | 8. Publish/reject | Ubah artikel uji menjadi `published`, refresh dan cocokkan database; ulangi menjadi `rejected`. Periksa hanya kolom status berubah. |
-| 9. Lewati UI | Jalankan SQL otorisasi di staging atau panggil REST API menggunakan sesi non-admin uji; UPDATE/DELETE harus ditolak atau menghasilkan nol baris, dan status di database tetap. Uji langsung ini wajib—redirect UI saja tidak cukup. |
+| 9. Lewati UI | Panggil REST API menggunakan sesi non-admin uji; UPDATE/DELETE harus ditolak atau menghasilkan nol baris, dan status di database tetap. Uji langsung ini wajib—redirect UI saja tidak cukup. |
 
 Untuk uji API akun biasa tanpa membagikan token: login akun uji tersebut di klien pengujian terpisah yang kamu kendalikan (bukan halaman admin yang otomatis sign out). Jangan menempel access token ke chat/log/repository. Gunakan `Authorization: Bearer <access_token akun uji>` dan header `apikey` publishable key, lalu periksa respons serta baris database. HTTP 200 dengan `[]` dapat berarti RLS menolak semua baris; jangan menyimpulkan sukses dari kode HTTP saja. Jika anon/member bisa memperbarui satu baris pun, hentikan publikasi dan perbaiki policy setelah audit.
 
@@ -97,20 +85,20 @@ Pemeriksaan asli yang telah dilakukan hanya: SELECT terbatas/tanpa baris pada ta
 
 ## Integrasi publik dan pekerjaan tersisa
 
-Form tanpa login, upload gambar maksimal 5 MB, retry, serta feed/detail `published` sudah terhubung pada kode. Aktifkan izin server melalui audit dan `supabase/04-public-articles.sql`, lalu lakukan pengujian asli sesuai [panduan pengiriman publik](supabase-submissions.md). Suite browser menggunakan endpoint simulasi; hasilnya tidak membuktikan RLS produksi.
+Form tanpa login, upload gambar maksimal 5 MB, retry, serta feed/detail `published` sudah terhubung pada kode. Kelola izin server melalui dashboard Supabase dan lakukan pemeriksaan sesuai [panduan pengiriman publik](supabase-submissions.md). Pengujian otomatis sebelum pembersihan memakai endpoint simulasi dan tidak membuktikan seluruh RLS produksi.
 
 Pekerjaan operasional tersisa: verifikasi akun dan policy produksi, perlindungan spam melalui CAPTCHA yang diverifikasi server/rate limit, serta pembersihan gambar yatim menggunakan Storage API berizin. Tidak ada push/deploy otomatis. Model pertumbuhan DNN bukan bagian dari integrasi artikel ini.
 
-## Mengaktifkan Hapus Artikel
+## Hapus Artikel
 
 Tombol Hapus Artikel pada pratinjau meminta konfirmasi permanen, memverifikasi ulang sesi dan keanggotaan admin, lalu DELETE berdasarkan ID dan status terakhir. Jika server tidak mengonfirmasi baris terhapus, halaman tetap terbuka dengan pesan gagal. Setelah berhasil, kembali ke dashboard. Data artikel dihapus permanen; file gambar Storage tetap ada untuk pembersihan terpisah agar tidak menghapus gambar yang mungkin dipakai artikel lain.
 
-1. Tinjau audit `supabase/01-audit-access.sql`, terutama policy DELETE/ALL dan hak tulis `admin_users`.
-2. Buka Supabase → SQL Editor → New query, salin isi `supabase/05-admin-delete.sql`, lalu Run. SQL hanya menambah izin dan policy DELETE khusus admin, tidak menghapus data, tidak membuat ulang tabel/bucket, dan tidak mematikan RLS. Policy restrictive mencegah akun biasa menghapus walaupun ada policy permissive lain. Policy SELECT artikel/membership yang sudah berfungsi tetap diperlukan.
+1. Pemilik sudah mengonfirmasi fitur hapus berfungsi. Policy DELETE tetap tersimpan di Supabase meskipun file setup lokal dihapus.
+2. Jika fitur bermasalah lagi, periksa grants DELETE, policy DELETE/ALL, keanggotaan admin, dan policy SELECT melalui dashboard Supabase. Jangan membuka akses hapus untuk publik.
 3. Pada versi situs yang memuat perubahan ini, login admin dan gunakan **artikel uji**: klik Hapus lalu Batal (artikel tetap ada); klik lagi lalu konfirmasi (kembali ke dashboard, artikel hilang dari daftar dan URL publik setelah dimuat ulang).
 4. Uji request DELETE langsung memakai akun non-admin dan anon terhadap artikel uji: baris tidak boleh terhapus. Jangan menganggap HTTP 200 sebagai bukti berhasil; RLS bisa menghasilkan nol baris. Pengujian produksi ini belum dijalankan oleh implementasi.
 
-Implementasi memakai [`delete()` SDK resmi](https://supabase.com/docs/reference/javascript/delete) dan meminta ID baris yang dihapus untuk memastikan hasilnya. Pengujian browser mencakup batal, berhasil, izin ditolak, nol baris, dan keanggotaan dicabut. Tidak ada penghapusan data produksi atau push otomatis.
+Implementasi memakai [`delete()` SDK resmi](https://supabase.com/docs/reference/javascript/delete) dan meminta ID baris yang dihapus untuk memastikan hasilnya. Pengujian browser mencakup batal, berhasil, izin ditolak, nol baris, dan keanggotaan dicabut. Pengujian otomatis sebelumnya tidak menghapus data produksi.
 
 ## Sumber resmi
 

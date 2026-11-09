@@ -10,29 +10,18 @@ Form `/kirim-artikel/` sekarang mengirim melalui SDK Supabase. Pengunjung tidak 
 
 Client khusus publik tidak membaca atau menimpa sesi admin. INSERT menggunakan `return=minimal`, tanpa SELECT artikel pending/email. Dashboard yang sudah terhubung Supabase dapat membaca kiriman yang berhasil diterima dan mengambil keputusan. Tidak ada kredensial admin/secret key dalam alur pengiriman.
 
-## Status aktivasi
+## Konfigurasi server dan pemeriksaan
 
-**Kode frontend sudah terhubung, tetapi izin server belum aktif.** Pada pemeriksaan 9 November 2026, POST batch kosong ke `articles` menggunakan publishable key ditolak `401`, kode PostgreSQL `42501`, `permission denied for table articles`. Batch kosong tidak membuat artikel. Pengujian ini tidak menguji unggah gambar produksi.
+Artikel publik dan penghapusan admin sudah dikonfirmasi berfungsi oleh pemilik. File SQL setup dan script pengujian lokal telah dihapus atas permintaan pemilik; database, akun, bucket, dan policy yang sudah diterapkan tidak ikut terhapus. Arsip setup tersedia di riwayat Git pada commit `058a45d`.
 
-Tidak ada policy, bucket, tabel, akun, atau data produksi yang diubah oleh implementasi ini. Tidak ada git push/deploy otomatis. Mengubah file lokal belum mengubah website yang sedang di-host.
+Konfigurasi yang perlu dipertahankan di Supabase:
 
-## Mengaktifkan pengiriman
+- Bucket `articles-images` public, maksimal 5 MB, MIME JPG/PNG/WebP; path unggahan acak tanpa overwrite atau DELETE anonim.
+- INSERT publik dibatasi ke kolom kiriman, status `pending`, panjang teks dan path gambar yang valid. Helper `tumbuh_submission_cover_exists` memeriksa keberadaan objek Storage.
+- SELECT publik hanya kolom aman pada artikel `published`, tanpa `author_email`. UPDATE/DELETE artikel memerlukan keanggotaan admin.
+- Index unik `tumbuh_submission_cover_unique` pada path kiriman mencegah duplikasi saat retry.
 
-1. Buka proyek `ayotumbuh` di Supabase. Jalankan **audit baca-saja** `supabase/01-audit-access.sql` dan tinjau policy/grants yang ada.
-2. Pastikan bucket **yang sudah ada** `articles-images` bersifat public, `file_size_limit` maksimal `5242880`, dengan MIME `image/jpeg`, `image/png`, `image/webp`. File SQL berhenti jika konfigurasi ini belum cocok; tidak membuat ulang bucket.
-3. Tinjau lalu jalankan `supabase/04-public-articles.sql` melalui SQL Editor. Alternatif: hubungkan plugin Supabase agar konfigurasi bisa diperiksa dan diterapkan setelah ditinjau.
-4. Jalankan situs lokal (`python3 -m http.server 8000`) dan buka `http://localhost:8000/kirim-artikel/`. Kirim satu **artikel uji** dan satu gambar, kemudian cek Storage serta Table Editor. Baris harus `pending`.
-5. Login admin pada `/admin/`, buka `/admin/peninjauan/`, baca kiriman baru, lalu uji publish/reject pada artikel uji. Setelah publish, periksa kemunculannya di beranda, daftar, dan detail publik; setelah reject, pastikan tidak dapat dibaca lagi. Pastikan role anon tetap tidak dapat UPDATE/DELETE atau membaca email/pending melalui API.
-6. Setelah pengujian asli selesai, publikasi perubahan website dilakukan terpisah sesuai persetujuan pemilik. Periksa cache browser ketika membandingkan versi lokal dan versi online.
-
-### Isi SQL 04
-
-- Memberi role `anon` hanya INSERT pada tujuh kolom kiriman. Tidak memberi akses mengisi `id`/`created_at`, UPDATE, atau DELETE. SELECT dibatasi ke kolom aman dan baris `published`; email penulis tidak diberikan kepada anon. Transaksi berhenti jika akses email masih diwarisi dari role lain.
-- Policy INSERT mengharuskan `pending`; policy **restrictive** tambahan tetap memeriksa status, panjang teks, email, path gambar, dan keberadaan objek Storage walaupun ada policy INSERT permissive lain.
-- Membuat helper `tumbuh_submission_cover_exists(text)` yang hanya mengembalikan boolean. Helper ini `SECURITY DEFINER` dengan `search_path` kosong dan nama schema eksplisit, sehingga anon tidak perlu SELECT `storage.objects`. Helper tidak memberi akses tulis atau daftar file.
-- Membuka INSERT objek hanya di `articles-images/submissions/<uuid>/cover.jpg|png|webp`. Bucket menegakkan MIME dan maksimum 5 MB. Anon tetap tidak mendapat overwrite/delete pada bucket ini. Policy bucket lain dan policy admin tidak diganti.
-- Menambahkan index unik parsial `tumbuh_submission_cover_unique` pada path kiriman. Retry dengan path yang sama tidak menambah artikel ganda. Bila path `submissions/` sudah dipakai dan mempunyai duplikat, pembuatan index gagal dan transaksi dibatalkan; audit duplikat terlebih dahulu, jangan menghapus data sembarangan.
-- Hanya policy bernama `tumbuh_public_*` milik integrasi ini yang diganti ketika file dijalankan ulang. Tetap periksa grants kolom/role turunan dan RPC/view lain pada audit.
+Untuk pemeriksaan manual, kirim artikel uji tanpa login, pastikan statusnya pending, lalu tinjau melalui `/admin/peninjauan/`. Setelah publish, artikel harus muncul di halaman publik; setelah reject atau hapus, artikel tidak dapat dibaca lagi setelah halaman dimuat ulang. Periksa juga akun non-admin tidak bisa mengubah atau menghapus artikel lewat API.
 
 Konten HTML dari client tetap dianggap tidak tepercaya; pemeriksaan frontend bisa dilewati. Pratinjau admin selalu melakukan sanitasi ulang. Renderer publik juga menyaring HTML dengan sanitizer yang sama. Pemeriksaan MIME/signature browser bukan pemindai keamanan file server.
 
@@ -48,20 +37,6 @@ Konten HTML dari client tetap dianggap tidak tepercaya; pemeriksaan frontend bis
 
 Pengiriman tanpa login berarti endpoint INSERT/upload memang terbuka untuk menerima kiriman. Batas ukuran/panjang/status melindungi struktur data, **tidak menghentikan spam berulang atau penghabisan kuota**. Sebelum trafik besar, pasang rate limit dan CAPTCHA yang diverifikasi server (misalnya gateway Supabase Edge Function), lalu tutup jalur langsung yang bisa melewatinya. Jangan menaruh CAPTCHA secret maupun Supabase secret di browser. Penguncian tombol di UI bukan rate limit server.
 
-Bucket public membuat URL gambar dapat dibaca walaupun artikel masih pending; jangan mengunggah materi rahasia. Beranda/daftar/baca artikel menggunakan Supabase dengan filter `published`, sanitasi HTML, dan proyeksi tanpa `author_email`. SQL 04 menambahkan pembatasan SELECT di server; kode frontend saja tidak cukup.
-
-## Pengujian yang tersedia
-
-`npm run test:admin` menjalankan SDK asli dengan endpoint Supabase simulasi, termasuk:
-
-- Draf lokal/restore tanpa request jaringan.
-- Upload + INSERT pending + sanitasi + pengosongan form setelah sukses.
-- Pengiriman publik pada browser yang juga mempunyai sesi admin, lalu kiriman muncul dan dapat ditinjau admin.
-- Upload ditolak, INSERT ditolak, retry tanpa upload ganda, respons INSERT hilang, dan penolakan file palsu/>5 MB.
-- Login/guard/refresh/logout/non-admin, sanitasi pratinjau, dan publish/reject dari suite admin.
-- Feed published, detail, pagination, pencarian dengan karakter khusus, hasil kosong, dan kegagalan API tanpa fallback demo.
-- Jalur domain sendiri dan `/tumbuh/`, serta tampilan mobile tanpa overflow horizontal.
-
-Laporan: `test-results/admin-supabase.json`. Suite simulasi tidak membuktikan grants/RLS produksi. Pengiriman nyata belum dinyatakan berhasil sebelum SQL ditinjau/diaktifkan dan artikel uji diperiksa pada proyek asli.
+Bucket public membuat URL gambar dapat dibaca walaupun artikel masih pending; jangan mengunggah materi rahasia. Beranda/daftar/baca artikel menggunakan Supabase dengan filter `published`, sanitasi HTML, dan proyeksi tanpa `author_email`. Pembatasan SELECT tetap harus ditegakkan di server; kode frontend saja tidak cukup.
 
 Referensi resmi: [upload Storage](https://supabase.com/docs/reference/javascript/storage-from-upload), [INSERT](https://supabase.com/docs/reference/javascript/insert), dan [Storage access control](https://supabase.com/docs/guides/storage/security/access-control).
