@@ -1,5 +1,37 @@
-const articleData = [];
-/// Daftar artikel pratinjau diisi di js/articles.js agar tidak memuat seluruh konten artikel.
+const articleData = [
+  {
+    title: "Inspirasi makanan sehat dan bergizi untuk si kecil.",
+    excerpt:
+      "Ide sederhana membuat waktu makan lebih menyenangkan, dengan pilihan menu beragam yang mudah dipahami keluarga.",
+    image: "assets/artikel-1.jpg",
+    date: "29 Oktober 2026",
+    author: "FITRI NOVITASARI BR MANALU",
+  },
+  {
+    title: "Kenali indikator pertumbuhan anak",
+    excerpt:
+      "Kenali tiga indeks yang membantu orang tua memahami pertumbuhan balita.",
+    image: "assets/artikel-2.jpg",
+    date: "05 November 2026",
+    author: "Tim Edukasi TUMBUH",
+  },
+  {
+    title: "Panduan menimbang berat badan balita",
+    excerpt:
+      "Pelajari langkah pengukuran agar hasil pemantauan lebih konsisten.",
+    image: "assets/artikel-3.jpg",
+    date: "02 November 2026",
+    author: "Tim Edukasi TUMBUH",
+  },
+  {
+    title: "Menu seimbang untuk hari-hari sibuk",
+    excerpt:
+      "Ide membuat variasi menu sederhana dari bahan yang mudah ditemukan.",
+    image: "assets/artikel-1.jpg",
+    date: "22 Oktober 2026",
+    author: "Tim Edukasi TUMBUH",
+  },
+];
 const rootPath = location.pathname.includes("/admin/") ? "../" : "./";
 function header() {
   const el = document.querySelector("#site-header");
