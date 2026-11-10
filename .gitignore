@@ -1,3 +1,4 @@
+# Kredensial lingkungan dan metadata sistem tidak perlu masuk repository.
 .env
 .env.*
 !.env.example

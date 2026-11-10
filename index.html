@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Beranda website aktif: pengenalan, form pertumbuhan, artikel terbaru, dan FAQ. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -35,8 +37,10 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   </head>
   <body data-page="home">
+    <!-- Header diisi main.js supaya navigasi konsisten di seluruh halaman. -->
     <div id="site-header"></div>
     <main>
+      <!-- Pembuka utama dengan foto dan tombol menuju pemeriksaan. -->
       <section class="hero" id="beranda">
         <div class="hero-visual" aria-hidden="true">
           <img src="assets/dokter-anak.jpg" class="hero-photo" alt="" />
@@ -96,6 +100,7 @@
           >
         </div>
       </div>
+      <!-- Penjelasan indeks sebelum pengguna memasukkan data. -->
       <section class="section" id="mengenal">
         <div class="wrap">
           <div class="section-head">
@@ -149,6 +154,7 @@
           </div>
         </div>
       </section>
+      <!-- Form anak memakai tanggal lahir, jenis kelamin, berat kg, dan tinggi cm. -->
       <section class="section check-section" id="cek">
         <div class="wrap">
           <span class="eyebrow">CARA KERJA TUMBUH</span>
@@ -191,6 +197,7 @@
             <div class="form-card">
               <h3>Cek pertumbuhan anak</h3>
               <p class="body-muted">Masukkan data pengukuran si kecil.</p>
+              <!-- Submit menyimpan input pada sessionStorage lalu membuka halaman hasil; tidak mengirim data anak ke Supabase. -->
               <form id="growth-form">
                 <div class="form-grid">
                   <div class="field">
@@ -280,6 +287,7 @@
               >Jelajahi Semua Artikel ↗</a
             >
           </div>
+          <!-- Wadah dinamis: skeleton lalu maksimal tiga artikel published dari Supabase. -->
           <div class="articles-grid" id="home-articles"></div>
         </div>
       </section>
@@ -336,7 +344,9 @@
         </div>
       </section>
     </main>
+    <!-- Footer bersama diisi main.js; bukan salinan markup yang perlu diedit pada tiap halaman. -->
     <div id="site-footer"></div>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="js/main.js" defer></script>
     <script src="js/vendor/supabase-2.119.0.js" defer></script>
     <script src="js/vendor/purify-3.4.17.min.js" defer></script>

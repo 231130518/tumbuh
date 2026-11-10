@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Form pengunjung tanpa login; artikel dikirim pending untuk ditinjau admin. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -14,6 +16,7 @@
     <link rel="apple-touch-icon" href="../assets/logo-tumbuh.png?v=20261108" />
   </head>
   <body data-page="submit">
+    <!-- Header diisi main.js supaya navigasi konsisten di seluruh halaman. -->
     <div id="site-header"></div>
     <main>
       <section class="page-hero">
@@ -29,6 +32,7 @@
       <section class="inner-page">
         <div class="wrap">
           <div class="form-page">
+            <!-- Field HTML membantu validasi awal; article-submit.js memvalidasi ulang sebelum request. -->
             <form class="form-card" id="submit-article">
               <h3>Tulis artikelmu</h3>
               <p class="body-muted" id="article-form-intro">
@@ -83,6 +87,7 @@
                 </div>
                 <div class="field full">
                   <label>Isi artikel *</label>
+                  <!-- Tombol hanya mengatur format seleksi pada contenteditable, bukan mengirim form. -->
                   <div class="editor-tools" aria-label="Format isi artikel">
                     <button
                       type="button"
@@ -160,6 +165,7 @@
                   /></label>
                 </div>
               </div>
+              <!-- Kirim mengunggah ke Supabase; Simpan Draf hanya menyimpan teks di browser. -->
               <div class="article-form-actions">
                 <button class="btn" type="submit" id="submit-article-button" disabled>
                   Kirim Artikel untuk Ditinjau ↗</button
@@ -179,6 +185,7 @@
                 role="status"
               ></div>
             </form>
+            <!-- Panduan pengiriman dan penjelasan bahwa draf lokal berbeda dari kiriman server. -->
             <aside class="helper-card">
               <span class="eyebrow">SEBELUM MENGIRIM</span>
               <h3>Sedikit panduan untuk tulisanmu</h3>
@@ -198,7 +205,9 @@
         </div>
       </section>
     </main>
+    <!-- Footer bersama diisi main.js; bukan salinan markup yang perlu diedit pada tiap halaman. -->
     <div id="site-footer"></div>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="../js/main.js" defer></script>
     <script src="../js/vendor/supabase-2.119.0.js" defer></script>
     <script src="../js/vendor/purify-3.4.17.min.js" defer></script>

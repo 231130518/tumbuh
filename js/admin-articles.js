@@ -1,3 +1,8 @@
+/**
+ * Lapisan akses tabel articles khusus admin.
+ * Fungsi mengembalikan data atau melempar Error; admin.js menentukan pesan dan tampilannya.
+ * Filter/pemeriksaan browser membantu alur, sedangkan izin sebenarnya tetap ditegakkan oleh RLS.
+ */
 /* Hanya data Supabase. Tidak membaca seed atau localStorage artikel demo. */
 (() => {
   "use strict";
@@ -10,6 +15,10 @@
 
   const { articleId, imageUrl, sanitize } = window.TumbuhArticleContent;
 
+  /**
+   * Memuat satu halaman artikel dan jumlah pending; halaman dihitung mulai dari 0.
+   * Kolom isi lengkap/email tidak diperlukan untuk kartu daftar sehingga tidak diminta.
+   */
   async function list(filter = "pending", page = 0) {
     if (filter !== "semua" && !STATUSES[filter]) throw new Error("Filter artikel tidak valid.");
     if (!Number.isSafeInteger(page) || page < 0) throw new Error("Halaman tidak valid.");
@@ -29,6 +38,10 @@
     return { articles: data || [], count: count || 0, pendingCount, pageSize: PAGE_SIZE };
   }
 
+  /**
+   * Mengambil satu artikel dengan ID int8 yang diperlakukan sebagai string.
+   * maybeSingle mengizinkan hasil kosong jika artikel hilang atau tidak terlihat oleh RLS.
+   */
   async function get(id) {
     const safeId = articleId(id);
     await api.requireAdmin();
@@ -37,6 +50,10 @@
     return data;
   }
 
+  /**
+   * Menyimpan published/rejected hanya jika ID dan status sebelumnya masih cocok.
+   * Baris hasil diminta kembali untuk memastikan perubahan benar-benar diterima server.
+   */
   async function setStatus(id, before, status) {
     const safeId = articleId(id);
     if (!["published", "rejected"].includes(status) || !STATUSES[before]) throw new Error("Perubahan status tidak valid.");
@@ -49,6 +66,10 @@
     return data;
   }
 
+  /**
+   * Menghapus satu artikel setelah verifikasi admin; nol baris bukan bukti penghapusan berhasil.
+   * Fungsi ini tidak menghapus gambar dari Storage.
+   */
   async function remove(id, before) {
     const safeId = articleId(id);
     if (!STATUSES[before]) throw new Error("Status artikel tidak valid. Muat ulang artikel.");
@@ -60,6 +81,11 @@
     if (!data || data.id !== safeId) throw new Error("Penghapusan belum terkonfirmasi. Artikel mungkin berubah, sudah dihapus, atau izin hapus belum tersedia. Muat ulang artikel.");
   }
 
+  /**
+   * Memvalidasi dan membersihkan revisi, kemudian membaca ulang snapshot artikel.
+   * Hanya title/subtitle/content dikirim; status dan identitas penulis dipertahankan.
+   * Pemeriksaan snapshot bukan kunci transaksi: revisi yang benar-benar serentak masih bisa bertabrakan.
+   */
   async function revise(before, fields) {
     const safeId = articleId(before?.id);
     if (!STATUSES[before.status]) throw new Error("Status artikel tidak valid. Muat ulang artikel.");

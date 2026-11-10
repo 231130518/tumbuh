@@ -1,3 +1,7 @@
+/**
+ * Satu modul untuk beranda, daftar artikel, dan halaman baca.
+ * Elemen DOM yang tersedia menentukan fungsi halaman; client publik selalu memakai akses anon.
+ */
 /* Bacaan publik: hanya published dari Supabase; tidak membaca data demo/lokal. */
 (() => {
   "use strict";
@@ -12,9 +16,15 @@
   const detail = $("article-detail");
   let page = 0;
   let search = "";
+  /**
+   * Versi pencarian/navigasi; request lama boleh selesai, tetapi hasilnya tidak boleh lagi mengganti tampilan.
+   */
   let generation = 0;
   let timer;
 
+  /**
+   * Helper DOM yang mengisi teks secara aman tanpa innerHTML untuk metadata artikel.
+   */
   function node(tag, className, text) {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -22,12 +32,18 @@
     return element;
   }
 
+  /**
+   * Membuat tautan baca dengan ID database yang di-encode sebagai parameter URL.
+   */
   function link(article, className, text) {
     const element = node("a", className, text);
     element.href = `${routes.article}?id=${encodeURIComponent(article.id)}`;
     return element;
   }
 
+  /**
+   * Memuat sampul yang lolos pemeriksaan URL, dengan teks pengganti jika gambar tidak tersedia.
+   */
   function image(article, wrapper) {
     const placeholder = node("span", "article-cover-empty", "Gambar tidak tersedia");
     const source = content.imageUrl(article.cover_image_path);
@@ -44,12 +60,18 @@
     wrapper.append(placeholder);
   }
 
+  /**
+   * Mengubah created_at menjadi tanggal yang mudah dibaca pengguna Indonesia.
+   */
   function date(value) {
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? "" :
       new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(parsed);
   }
 
+  /**
+   * Menyusun kartu biasa atau kartu rekomendasi; isi menggunakan elemen DOM dan teks aman.
+   */
   function card(article, recommendation = false) {
     const item = node("article", recommendation ? "latest-entry" : "article-card");
     const cover = link(article, recommendation ? "latest-cover" : "article-card-cover");
@@ -69,6 +91,9 @@
     return item;
   }
 
+  /**
+   * Mengganti area data dengan pesan kosong/gagal dan tombol mencoba lagi bila diperlukan.
+   */
   function feedback(target, text, retry) {
     const box = node("div", "article-feedback");
     const message = node("p", "", text);
@@ -83,6 +108,10 @@
     target.replaceChildren(box);
   }
 
+  /**
+   * Menyiapkan query dasar published dengan proyeksi kolom aman dan urutan terbaru.
+   * Tidak meminta author_email, termasuk jika browser juga mempunyai sesi admin.
+   */
   function query() {
     // Proyeksi eksplisit: author_email tidak pernah diminta, termasuk ketika
     // browser mempunyai sesi admin. RLS/column grants juga menegakkan ini.
@@ -92,6 +121,9 @@
       .order("created_at", { ascending: false }).order("id", { ascending: false });
   }
 
+  /**
+   * Mengapit dan meng-escape nilai pencarian agar tanda kutip/koma tidak menjadi sintaks filter PostgREST.
+   */
   function searchFilter(value) {
     // Nilai raw PostgREST harus diapit kutip; kutip/backslash/wildcard di input
     // diperlakukan sebagai karakter pencarian, bukan sintaks filter tambahan.
@@ -99,6 +131,9 @@
     return `title.ilike."%${escaped}%",subtitle.ilike."%${escaped}%"`;
   }
 
+  /**
+   * Memuat tiga artikel di beranda atau sembilan per halaman daftar; skeleton diganti saat respons selesai.
+   */
   async function loadList(version) {
     const target = home || list;
     loading.show(target, "cards", home ? 3 : 6);
@@ -130,6 +165,9 @@
     }
   }
 
+  /**
+   * Mengosongkan judul, gambar, isi, dan rekomendasi lama sebelum memuat artikel baru.
+   */
   function resetDetail() {
     document.title = "Isi Artikel — TUMBUH";
     $("article-hero-title").textContent = "Memuat artikel…";
@@ -142,6 +180,9 @@
     detail.replaceChildren();
   }
 
+  /**
+   * Memuat maksimal tiga artikel lain; kegagalannya tidak menghilangkan isi artikel utama.
+   */
   async function loadRecommendations(id, version) {
     const target = $("article-recommendations");
     document.querySelector(".article-latest").hidden = false;
@@ -161,6 +202,9 @@
     }
   }
 
+  /**
+   * Memvalidasi ID, mengambil artikel published, lalu menampilkan isi yang sudah disanitasi.
+   */
   async function loadDetail(version) {
     resetDetail();
     loading.show(detail, "detail", 1);
@@ -200,6 +244,9 @@
     }
   }
 
+  /**
+   * Menampilkan kondisi artikel tidak tersedia beserta jalan kembali ke daftar.
+   */
   function showUnavailable() {
     $("article-hero-title").textContent = "Artikel tidak tersedia.";
     $("article-hero-subtitle").textContent = "Artikel belum diterbitkan atau sudah tidak tersedia.";
@@ -208,12 +255,18 @@
     detail.replaceChildren(back);
   }
 
+  /**
+   * Menaikkan versi request; respons versi sebelumnya tidak boleh menimpa hasil terbaru.
+   */
   function refresh() {
     const version = ++generation;
     if (detail) loadDetail(version);
     else if (home || list) loadList(version);
   }
 
+  /**
+   * Memasang pencarian dengan debounce 250 ms, pagination, dan refresh ketika halaman aktif kembali.
+   */
   function init() {
     $("article-search")?.addEventListener("input", (event) => {
       search = event.target.value.trim().slice(0, 100);

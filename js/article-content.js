@@ -1,6 +1,14 @@
+/**
+ * Aturan bersama untuk konten HTML, ID database, dan alamat gambar.
+ * Modul ini dibaca pengiriman, halaman publik, dan admin supaya sanitasi konsisten.
+ */
 /* Sanitasi yang sama untuk pengiriman publik dan pratinjau admin. */
 (() => {
   "use strict";
+  /**
+   * DOMPurify menyisakan tag/atribut yang diizinkan dan menghasilkan DocumentFragment.
+   * Kelas CSS serta protokol tautan dibatasi lagi agar konten tidak mengubah UI atau menjalankan script.
+   */
   function sanitize(raw) {
     if (!window.DOMPurify?.isSupported) throw new Error("Pembersih konten tidak tersedia. Artikel belum dapat diproses.");
     const fragment = window.DOMPurify.sanitize(String(raw || ""), {
@@ -26,11 +34,17 @@
     return fragment;
   }
 
+  /**
+   * Mengubah fragment bersih menjadi pasangan HTML dan teks; keduanya dipakai untuk validasi/editor.
+   */
   function html(raw) {
     const container = document.createElement("div");
     container.append(sanitize(raw));
     return { html: container.innerHTML, text: container.textContent.trim() };
   }
+  /**
+   * Memvalidasi ID positif dalam rentang PostgreSQL int8 menggunakan BigInt, lalu mengembalikan string.
+   */
   function articleId(value) {
     const id = String(value || "");
     if (!/^[1-9][0-9]{0,18}$/.test(id) || BigInt(id) > 9223372036854775807n) {
@@ -39,6 +53,10 @@
     return id;
   }
 
+  /**
+   * Menerima path bucket atau URL public Storage dari proyek yang sama.
+   * Path traversal, URL luar, dan format selain JPG/PNG/WebP ditolak.
+   */
   function imageUrl(path) {
     if (typeof path !== "string" || !path.trim()) return "";
     let objectPath = path.trim();

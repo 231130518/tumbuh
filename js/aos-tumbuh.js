@@ -1,3 +1,7 @@
+/**
+ * Koordinator animasi masuk saat elemen terlihat pada layar.
+ * AOS dari CDN dipakai jika tersedia; IntersectionObserver menjadi pengganti ketika CDN gagal.
+ */
 /* TUMBUH — seluruh AOS memakai gerakan HERO: fade-up 20px, 740ms,
    cubic-bezier(.22,1,.36,1); sekali muncul, footer statis.
    AOS tetap mendeteksi elemen; CSS yang mengatur animasi agar seragam.
@@ -94,6 +98,9 @@
 
   // Hero pertama: animasi sekali saat halaman benar-benar terbuka,
   // bukan ketika AOS mendeteksi hero yang tertutup layar loading.
+  /**
+   * Menampilkan judul hero sekali setelah overlay selesai, dengan fallback jika sinyal loader tidak tiba.
+   */
   function introHeroOnce() {
     if (document.body.dataset.page !== "home") return;
     const html = document.documentElement;
@@ -132,6 +139,10 @@
   let aosActive = false;
   let ready = false;
 
+  /**
+   * Memberi atribut AOS pada elemen baru sesuai kelompok.
+   * Konten skeleton/fade-in async dilewati agar tidak mendapat animasi ganda.
+   */
   function markAll() {
     const newlyMarked = [];
     for (const g of groups) {
@@ -169,6 +180,9 @@
     return newlyMarked;
   }
 
+  /**
+   * Mengamati elemen yang masuk viewport ketika library AOS tidak tersedia; hentikan observasi setelah tampil.
+   */
   function offlineFallback(elements) {
     if (reduceMotion()) return;
     if (!offlineObserver) {
@@ -191,6 +205,9 @@
     }
   }
 
+  /**
+   * Mendaftarkan elemen baru tanpa mengulang seluruh animasi yang sudah selesai.
+   */
   function refresh() {
     const newlyMarked = markAll();
     if (!ready) return;
@@ -206,6 +223,9 @@
     }
   }
 
+  /**
+   * Menunggu loader, memilih AOS atau fallback, lalu memantau perubahan DOM untuk artikel yang dimuat dinamis.
+   */
   function init() {
     introHeroOnce();
     if (reduceMotion())

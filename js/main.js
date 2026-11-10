@@ -1,3 +1,7 @@
+/**
+ * Kode bersama antarmuka: navigasi, formulir anak, hasil model, dan toolbar editor.
+ * Setiap fitur memeriksa elemen halamannya sendiri, sehingga file ini aman dipakai lintas halaman.
+ */
 // Lokasi script menjadi acuan: bekerja pada domain sendiri maupun /tumbuh/.
 const rootPath = new URL("../", document.currentScript.src).pathname;
 const routes = {
@@ -23,6 +27,9 @@ if (
     location.pathname.slice(0, -10) + location.search + location.hash,
   );
 }
+/**
+ * Membangun header sesuai halaman, lalu memasang menu mobile dan perubahan saat scroll.
+ */
 function header() {
   const target = document.getElementById("site-header");
   if (!target) return;
@@ -70,6 +77,9 @@ function header() {
     if (event.key === "Escape") setOpen(false);
   });
 }
+/**
+ * Mengisi footer yang sama pada semua halaman; URL berasal dari routes agar jalur folder tetap benar.
+ */
 function footer() {
   const target = document.getElementById("site-footer");
   if (!target) return;
@@ -89,6 +99,9 @@ function footer() {
   </footer>`;
 }
 
+/**
+ * Mengatur tautan ke bagian halaman: scroll, fokus keyboard, dan URL tanpa fragmen setelah tiba.
+ */
 function sectionNavigation() {
   const findTarget = (hash) => {
     try {
@@ -162,9 +175,16 @@ function sectionNavigation() {
 
 // Data pemeriksaan hanya bertahan dalam sesi tab, terpisah dari artikel.
 const GROWTH_SESSION_KEY = "tumbuh-growth-input-v1";
+/**
+ * Menghasilkan YYYY-MM-DD menurut tanggal perangkat, tanpa pergeseran tanggal akibat konversi UTC.
+ */
 function localDate(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
+/**
+ * Menghitung bulan penuh: kurangi satu bulan jika tanggal ulang bulan belum tercapai.
+ * Tanggal tidak valid atau tanggal lahir setelah pemeriksaan menghasilkan NaN.
+ */
 function ageInMonths(birthdate, reference = localDate()) {
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(birthdate) ||
@@ -188,6 +208,10 @@ function ageInMonths(birthdate, reference = localDate()) {
     (now.getDate() < birth.getDate() ? 1 : 0)
   );
 }
+/**
+ * Membaca sessionStorage dan memvalidasi ulang data sebelum digunakan.
+ * Nilai penyimpanan browser dapat diubah pengguna, sehingga tidak langsung dipercaya.
+ */
 function readGrowthInput() {
   try {
     const data = JSON.parse(sessionStorage.getItem(GROWTH_SESSION_KEY));
@@ -220,6 +244,9 @@ function readGrowthInput() {
     return null;
   }
 }
+/**
+ * Mengisi kembali formulir dari sesi, memvalidasi umur, lalu menyimpan input dan membuka halaman hasil.
+ */
 function growthForm() {
   const form = document.getElementById("growth-form");
   if (!form) return;
@@ -265,6 +292,10 @@ function growthForm() {
   });
 }
 let growthRunning = false;
+/**
+ * Mengisi ringkasan anak, menjalankan model, dan memasang label pada head TBU/BBU/BBTB.
+ * Jika model gagal, tampilkan kondisi belum tersedia dan tombol retry, bukan prediksi contoh.
+ */
 async function growthResults() {
   const summary = document.getElementById("child-summary");
   if (!summary || growthRunning) return;
@@ -336,6 +367,10 @@ async function growthResults() {
     growthRunning = false;
   }
 }
+/**
+ * Toolbar mempertahankan seleksi teks ketika tombol format ditekan.
+ * Bagian upload gambar hanya dipasang jika elemen file dan pratinjau tersedia.
+ */
 function editor() {
   const zone = document.getElementById("content-editor");
   if (!zone) return;
@@ -399,6 +434,9 @@ function editor() {
   });
 }
 
+/**
+ * Pasang fitur setelah DOM selesai dibaca; setiap fungsi keluar jika elemen halamannya tidak ditemukan.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   header();
   footer();

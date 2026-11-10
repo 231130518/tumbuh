@@ -1,3 +1,4 @@
+/* PETA CSS: token dasar → komponen umum → penyesuaian desain → animasi → hasil/model → admin dan skeleton. Aturan di bagian bawah dapat menimpa aturan di atas; jangan mengubah urutannya tanpa meninjau cascade. */
 :root {
   --dark: #193b37;
   --deep: #112e2b;
@@ -10,6 +11,7 @@
   --radius: 24px;
   --shadow: 0 20px 70px rgba(20, 52, 42, 0.08);
 }
+/* Box sizing memasukkan padding/border ke ukuran elemen agar layout grid lebih mudah diprediksi. */
 * {
   box-sizing: border-box;
 }
@@ -47,6 +49,7 @@ img {
   display: block;
   max-width: 100%;
 }
+/* Pembungkus konten bersama: membatasi lebar desktop dan memberi jarak dari tepi layar. */
 .wrap {
   width: min(1296px, calc(100% - 112px));
   margin: auto;
@@ -91,6 +94,7 @@ img {
 .body-muted {
   color: var(--muted);
 }
+/* Gaya tombol dasar; varian warna/outline mewarisi ukuran dan perilaku dari kelas ini. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -134,6 +138,7 @@ img {
   padding: 9px 18px;
   font-size: 12px;
 }
+/* Header dan navigasi, termasuk keadaan scroll serta tombol menu pada layar kecil. */
 .topbar {
   position: fixed;
   z-index: 100;
@@ -223,6 +228,7 @@ img {
   border: 0;
   font-size: 25px;
 }
+/* Bagian pembuka beranda: teks utama, foto, dan ornamen yang diposisikan terpisah. */
 .hero {
   position: relative;
   overflow: hidden;
@@ -324,6 +330,7 @@ img {
     rgba(25, 59, 55, 0.15) 78%
   );
 }
+/* Ornamen latar dekoratif; tidak membawa data atau hasil pemeriksaan. */
 .halo {
   position: absolute;
   border: 2px solid rgba(219, 241, 168, 0.17);
@@ -420,6 +427,7 @@ img {
   font-weight: 300;
   animation: float 2.5s infinite;
 }
+/* Pita teks bergerak: track dianimasikan, wadah menyembunyikan bagian yang keluar area. */
 .marquee {
   background: var(--mint);
   height: 58px;
@@ -443,6 +451,7 @@ img {
     transform: translateX(-50%);
   }
 }
+/* Kartu penjelasan indeks pertumbuhan sebelum pengguna mengisi formulir. */
 .index-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -517,6 +526,7 @@ img {
   border: 6px solid #a9d2ba65;
   border-radius: 50%;
 }
+/* Area pemeriksaan: langkah penggunaan dan form data anak. */
 .check-section {
   background: #f2f6ee;
 }
@@ -554,6 +564,7 @@ img {
   font-size: 14px;
   margin: 4px 0;
 }
+/* Wadah form bersama; dipakai pemeriksaan, pengiriman artikel, login, dan editor admin. */
 .form-card {
   background: white;
   border: 1px solid #e1eae0;
@@ -576,6 +587,7 @@ img {
   grid-template-columns: 1fr 1fr;
   gap: 19px;
 }
+/* Label dan kontrol isian form. Validasi datanya berada di HTML dan JavaScript. */
 .field {
   display: flex;
   flex-direction: column;
@@ -682,6 +694,7 @@ img {
   text-align: right;
   margin: 15px 14px 0;
 }
+/* Grid artikel publik. Skeleton memakai wadah yang sama supaya ukuran dan kolom konsisten. */
 .articles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -730,6 +743,7 @@ img {
   font-weight: 800;
   color: var(--dark);
 }
+/* Ajakan bertindak pada beranda, dengan dekorasi latar dan tombol tujuan. */
 .cta {
   background: var(--dark);
   color: white;
@@ -777,6 +791,7 @@ img {
   max-width: 550px;
   margin-bottom: 0;
 }
+/* Komponen pertanyaan yang memakai details/summary bawaan browser. */
 .faq-list {
   border-top: 1px solid var(--line);
   margin-top: 38px;
@@ -804,6 +819,7 @@ img {
   color: var(--muted);
   max-width: 830px;
 }
+/* Footer bersama; bagian ini sengaja tetap statis agar informasi penutup mudah dibaca. */
 .footer {
   background: #112f2b;
   color: #e7f0e9;
@@ -840,6 +856,7 @@ img {
   display: flex;
   justify-content: space-between;
 }
+/* Hero halaman dalam, berbeda dari hero beranda yang memiliki foto. */
 .page-hero {
   padding: 172px 0 78px;
   background: linear-gradient(140deg, #193b37, #2d7165);
@@ -882,6 +899,7 @@ img {
 .inner-page {
   padding: 74px 0 110px;
 }
+/* Tampilan pencarian artikel; debounce dan query Supabase diatur public-articles.js. */
 .searchbar {
   display: flex;
   align-items: center;
@@ -926,6 +944,7 @@ img {
 .helper-card li {
   margin: 12px 0;
 }
+/* Toolbar format artikel, digunakan ulang oleh pengunjung dan admin. */
 .editor-tools {
   display: flex;
   gap: 5px;
@@ -945,6 +964,7 @@ img {
   font-weight: 800;
   color: #2d5949;
 }
+/* Area contenteditable. Sanitasi HTML dilakukan di JavaScript, bukan oleh CSS ini. */
 .editor {
   min-height: 230px;
   outline: 0;
@@ -955,6 +975,7 @@ img {
   border-radius: 0 0 12px 12px;
   font-size: 14px;
 }
+/* Area pemilihan satu gambar sampul dan pratinjau file sebelum dikirim. */
 .upload-zone {
   display: grid;
   place-items: center;
@@ -975,6 +996,7 @@ img {
   max-height: 180px;
   border-radius: 9px;
 }
+/* Tipografi isi artikel: heading, paragraf, daftar, dan catatan. */
 .article-detail {
   max-width: 860px;
   margin: auto;
@@ -1013,6 +1035,7 @@ img {
   padding: 35px;
   max-width: 800px;
 }
+/* Susunan tiga keluaran model; aturan khusus halaman results di bawah memberikan tampilan akhirnya. */
 .result-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1040,6 +1063,7 @@ img {
   font-size: 11px;
   font-weight: 700;
 }
+/* Aturan dasar dari rancangan admin awal; dashboard aktif memakai kelas review/admin-preview di bagian berikutnya. */
 .admin-shell {
   min-height: 100vh;
   display: grid;
@@ -1138,6 +1162,7 @@ img {
 .hidden {
   display: none !important;
 }
+/* Penyesuaian responsif untuk (max-width: 1000px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 1000px) {
   .wrap {
     width: min(100% - 48px, 920px);
@@ -1168,6 +1193,7 @@ img {
     font-size: 19px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   body {
     font-size: 14px;
@@ -1377,6 +1403,7 @@ img {
     font-size: 39px;
   }
 }
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1766,6 +1793,7 @@ img {
 .review-tabs span {
   margin-left: 5px;
 }
+/* Daftar peninjauan admin; data dan statusnya dimuat dari Supabase setelah verifikasi sesi. */
 .review-list {
   display: grid;
   gap: 14px;
@@ -1853,6 +1881,7 @@ img {
 .admin-tail p {
   color: #587366;
 }
+/* Penyesuaian responsif untuk (max-width: 900px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 900px) {
   .admin-nav nav {
     gap: 15px;
@@ -1868,6 +1897,7 @@ img {
     padding: 11px 13px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .hero {
     min-height: 820px;
@@ -1989,6 +2019,7 @@ img {
     padding: 55px 0;
   }
 }
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   .scroll-graphic::before,
   .scroll-line,
@@ -2155,6 +2186,7 @@ img {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Penyesuaian responsif untuk (max-width: 1200px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 1200px) {
   .article-layout {
     grid-template-columns: minmax(0, 1.7fr) minmax(290px, 1fr);
@@ -2175,6 +2207,7 @@ img {
     font-size: 17px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 900px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 900px) {
   .article-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -2193,6 +2226,7 @@ img {
     height: 118px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .scroll-cue {
     bottom: 0;
@@ -2228,6 +2262,7 @@ img {
     margin: 7px 0 8px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 370px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 370px) {
   .latest-entry {
     grid-template-columns: 86px minmax(0, 1fr);
@@ -2466,6 +2501,7 @@ body[data-page="article"] .article-latest {
 body[data-page="article"] .latest-entry {
   min-height: 145px;
 }
+/* Penyesuaian responsif untuk (max-width: 1250px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 1250px) {
   body[data-page="article"] .article-layout {
     grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
@@ -2475,6 +2511,7 @@ body[data-page="article"] .latest-entry {
     max-width: 1000px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 900px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 900px) {
   body[data-page="article"] .article-layout {
     grid-template-columns: 1fr;
@@ -2500,6 +2537,7 @@ body[data-page="article"] .latest-entry {
     min-height: 270px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   body[data-page="article"] .topbar.inner {
     min-height: 73px;
@@ -2807,6 +2845,7 @@ html.tumbuh-is-loading body {
     visibility: hidden;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 600px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 600px) {
   .loader-emblem {
     top: 29%;
@@ -2843,6 +2882,7 @@ html.tumbuh-is-loading body {
     left: calc(50% - 215px);
   }
 }
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   .tumbuh-loader.is-animating .loader-logo,
   .tumbuh-loader.is-animating .loader-reveal {
@@ -2892,6 +2932,7 @@ body[data-page="admin-preview"] {
   background: #123d34;
   border-radius: 40px;
 }
+/* Bagian judul/subjudul pratinjau lengkap admin sebelum isi dan tombol keputusan. */
 .admin-preview-hero {
   height: 442px;
   position: relative;
@@ -3088,6 +3129,7 @@ body[data-page="admin-preview"] {
 .admin-preview-notfound h2 {
   font-size: 36px;
 }
+/* Penyesuaian responsif untuk (max-width: 980px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 980px) {
   .admin-preview-actions-inner {
     align-items: flex-start;
@@ -3104,6 +3146,7 @@ body[data-page="admin-preview"] {
     min-height: 300px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .admin-preview-intro {
     padding: 23px 0;
@@ -3219,6 +3262,7 @@ body[data-page="admin-preview"] {
 .admin-cover-full-btn[hidden] {
   display: none;
 }
+/* Dialog gambar utuh agar admin dapat melihat sampul tanpa potongan cover. */
 .admin-cover-dialog {
   position: fixed;
   inset: 5vh 5vw;
@@ -3263,6 +3307,7 @@ body[data-page="admin-preview"] {
   max-height: calc(90vh - 100px);
   object-fit: contain;
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .admin-cover-full-btn {
     right: 15px;
@@ -3343,6 +3388,7 @@ html.tumbuh-aos-fallback [data-aos].aos-animate {
 }
 
 /* Hindari efek perangkat mobile yang kurang kuat. */
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   html.tumbuh-aos-fallback [data-aos="fade-left"],
   html.tumbuh-aos-fallback [data-aos="fade-right"] {
@@ -3377,6 +3423,7 @@ html.tumbuh-aos-fallback [data-aos].aos-animate {
   }
 }
 
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -3472,6 +3519,7 @@ html.tumbuh-hero-shown
   animation: none !important;
 }
 
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   html.tumbuh-hero-shown body[data-page="home"] .hero-content > *,
   html.tumbuh-hero-prepared body[data-page="home"] .hero-content > * {
@@ -3487,6 +3535,7 @@ html.tumbuh-hero-shown
    Tetap menggunakan AOS untuk mendeteksi kapan elemen muncul.
    Footer, foto hero, ornamen, loading, marquee tidak disentuh.
    =============================================================== */
+/* Animasi hanya aktif jika pengguna tidak meminta pengurangan gerak. */
 @media (prefers-reduced-motion: no-preference) {
   html body main [data-aos]:not(.aos-animate) {
     opacity: 0 !important;
@@ -3510,6 +3559,7 @@ html.tumbuh-hero-shown
 }
 
 /* Jika pengguna memilih mengurangi animasi, semua konten tetap terlihat. */
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   html body main [data-aos] {
     opacity: 1 !important;
@@ -3528,6 +3578,7 @@ html.tumbuh-hero-shown
 }
 
 /* Font yang sama tersedia di semua perangkat, tanpa permintaan ke layanan font. */
+/* Font Inter disimpan dalam repository sehingga tampilan tidak bergantung pada layanan font eksternal. */
 @font-face {
   font-family: Inter;
   src: url("../assets/inter-latin-variable.woff2") format("woff2");
@@ -3781,6 +3832,7 @@ body[data-page="results"] .result-index-name {
   margin: 0 0 25px;
   color: #647a71;
 }
+/* Badge kategori model; teksnya diisi JavaScript dari label hasil, bukan ditentukan warna CSS. */
 .result-status {
   display: inline-flex;
   align-items: center;
@@ -3798,6 +3850,7 @@ body[data-page="results"] .result-description {
   line-height: 1.5;
   margin: 28px 0 0;
 }
+/* Catatan batas interpretasi hasil model di bawah tiga kartu klasifikasi. */
 .results-disclaimer {
   padding: 24px 28px;
   border-radius: 17px;
@@ -3837,6 +3890,7 @@ body[data-page="results"] .result-description {
   background: #eaf3e9;
   color: var(--teal);
 }
+/* Penyesuaian responsif untuk (max-width: 1100px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 1100px) {
   body[data-page="results"] .wrap {
     width: calc(100% - 64px);
@@ -3859,6 +3913,7 @@ body[data-page="results"] .result-description {
     min-height: 48px;
   }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   body[data-page="home"] .hero .wrap {
     padding-top: 125px;
@@ -4006,6 +4061,7 @@ body[data-page="results"] .result-description {
 .review-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 0; }
 .admin-preview-load { padding-top: 20px; padding-bottom: 20px; }
 .admin-preview-load:has(#preview-load-message:empty) { padding-top: 0; }
+/* Dialog revisi judul, subjudul, dan isi. Tinggi dibatasi viewport dan konten panjang dapat digulir. */
 .admin-edit-dialog { width: min(900px, calc(100% - 32px)); max-height: calc(100dvh - 40px); padding: 0; border: 0; border-radius: 24px; background: #fff; color: var(--dark); overflow-y: auto; }
 .admin-edit-dialog::backdrop { background: #123c35a6; }
 .admin-edit-dialog .form-card { padding: 30px; border: 0; box-shadow: none; }
@@ -4015,6 +4071,7 @@ body[data-page="results"] .result-description {
 .admin-edit-dialog .editor { min-height: 260px; max-height: 45dvh; overflow-y: auto; overflow-wrap: anywhere; }
 .admin-edit-dialog .editor-tools { flex-wrap: wrap; }
 .admin-edit-dialog .article-form-actions { flex-wrap: wrap; }
+/* Penyesuaian responsif untuk (max-width: 600px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 600px) {
   .admin-edit-dialog { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 16px; }
   .admin-edit-dialog .form-card { padding: 20px 16px; }
@@ -4035,6 +4092,7 @@ body[data-page="submit"] button:disabled { cursor: not-allowed; opacity: .55; }
 /* Skeleton artikel: warna lembut mengikuti kartu TUMBUH, tanpa delay buatan. */
 .article-skeleton { min-width: 0; pointer-events: none; }
 .skeleton-cards { overflow: hidden; background: #fff; border: 1px solid #e6ece5; border-radius: 22px; box-shadow: 0 10px 32px #12352b08; }
+/* Balok placeholder: pseudo-element menjalankan shimmer; reduced motion mematikan animasinya. */
 .skeleton-block { position: relative; overflow: hidden; background: #e8eeea; border-radius: 7px; }
 .skeleton-block::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(100deg, transparent 15%, #ffffffa6 50%, transparent 85%); animation: article-shimmer 1.7s ease-in-out infinite; }
 .skeleton-cover { height: 215px; border-radius: 0; }
@@ -4058,14 +4116,17 @@ body[data-page="submit"] button:disabled { cursor: not-allowed; opacity: .55; }
 .article-loaded { animation: article-content-in .38s ease-out; }
 @keyframes article-shimmer { to { transform: translateX(100%); } }
 @keyframes article-content-in { from { opacity: 0; } to { opacity: 1; } }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .skeleton-review { flex-direction: column; align-items: stretch; gap: 16px; padding: 17px; }
   .skeleton-review .skeleton-cover { width: 100%; height: 180px; }
 }
+/* Aksesibilitas: kurangi gerak sesuai preferensi perangkat tanpa menyembunyikan konten. */
 @media (prefers-reduced-motion: reduce) {
   .skeleton-block::after, .article-loaded { animation: none; }
   .skeleton-block::after { display: none; }
 }
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
 @media (max-width: 700px) {
   .admin-session-actions { gap: 8px; }
   .admin-session-actions .admin-pill { display: none; }

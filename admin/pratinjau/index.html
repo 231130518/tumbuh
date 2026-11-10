@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Pratinjau lengkap dan revisi artikel admin, termasuk keputusan terbit/tolak/hapus. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="../../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -35,6 +37,7 @@
         </div>
       </div>
     </header>
+    <!-- Informasi verifikasi dan jalan kembali ke login ketika akses belum tersedia. -->
     <section class="wrap admin-access" id="admin-access" aria-live="polite">
       <h1>Akses admin</h1>
       <p id="admin-access-message" role="status">Memeriksa sesi dan akses admin…</p>
@@ -42,6 +45,7 @@
       <a class="text-link" href="../">Ke halaman login</a>
       <noscript><p>Aktifkan JavaScript untuk masuk dan mengakses artikel.</p></noscript>
     </section>
+    <!-- hidden/inert mencegah tampilan dan interaksi sebelum verifikasi; keamanan database tetap memakai RLS. -->
     <main id="admin-content" hidden inert>
       <section class="admin-preview-intro">
         <div class="wrap admin-preview-intro-inner">
@@ -92,6 +96,7 @@
             Lihat gambar utuh ⤢
           </button>
         </figure>
+        <!-- Dialog sampul utuh; isinya hanya dipasang setelah akses admin valid. -->
         <dialog
           class="admin-cover-dialog"
           id="full-cover-dialog"
@@ -112,6 +117,7 @@
             alt="Pratinjau gambar sampul artikel secara utuh"
           />
         </dialog>
+        <!-- Isi pratinjau dibersihkan dari script/atribut berbahaya sebelum masuk ke DOM. -->
         <section class="admin-preview-content">
           <div class="wrap">
             <div class="admin-preview-reading">
@@ -120,6 +126,7 @@
             </div>
           </div>
         </section>
+        <!-- Edit, Setujui, Tolak, dan Hapus ditangani admin.js; draf admin masih dinonaktifkan. -->
         <section class="admin-preview-actions">
           <div class="wrap admin-preview-actions-inner">
             <div>
@@ -154,6 +161,7 @@
           ></p>
         </section>
       </div>
+      <!-- Dialog revisi mempertahankan status artikel; penyimpanan hanya mengubah judul, subjudul, dan isi. -->
       <dialog class="admin-edit-dialog" id="article-edit-dialog" aria-labelledby="article-edit-heading">
         <form id="admin-edit-form" class="form-card">
           <h2 id="article-edit-heading">Revisi artikel</h2>
@@ -203,7 +211,9 @@
         <a class="btn" href="../peninjauan/">Kembali ke Peninjauan ↗</a>
       </section>
     </main>
+    <!-- Footer bersama diisi main.js; bukan salinan markup yang perlu diedit pada tiap halaman. -->
     <div id="site-footer"></div>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="../../js/main.js" defer></script>
     <script src="../../js/vendor/supabase-2.119.0.js" defer></script>
     <script src="../../js/vendor/purify-3.4.17.min.js" defer></script>

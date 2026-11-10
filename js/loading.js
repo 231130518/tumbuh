@@ -1,3 +1,7 @@
+/**
+ * Overlay pembukaan situs dan indikator analisis model.
+ * File dipanggil dari head untuk menyiapkan kelas loading sebelum konten halaman terlihat.
+ */
 /* TUMBUH — layar loading Draft 4.6. Frontend-only, tanpa hasil prediksi buatan. */
 (function () {
   "use strict";
@@ -20,14 +24,23 @@
   let overlay = null;
   let running = false;
 
+  /**
+   * Promise jeda animasi; tidak menentukan atau memalsukan hasil pemeriksaan.
+   */
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+  /**
+   * Mencatat bahwa intro sudah diputar pada sesi tab ini.
+   */
   function markOpened() {
     try {
       sessionStorage.setItem("tumbuh-opened", "1");
     } catch (_) {}
   }
+  /**
+   * Membangun DOM overlay satu kali dan menggunakan ulang elemen yang sama untuk pemuatan berikutnya.
+   */
   function buildOverlay() {
     if (overlay) return overlay;
     overlay = document.createElement("div");
@@ -66,6 +79,9 @@
     document.body.appendChild(overlay);
     return overlay;
   }
+  /**
+   * Menyiapkan overlay untuk startup/prediction dan mengulang animasi dari awal.
+   */
   function present(mode) {
     const element = buildOverlay();
     element.classList.remove("is-exiting", "is-animating");
@@ -89,6 +105,9 @@
     element.classList.add("is-animating");
     return element;
   }
+  /**
+   * Menjalankan animasi keluar, melepas penguncian halaman, lalu memberi sinyal agar AOS dapat mulai.
+   */
   async function dismiss() {
     if (!overlay) return;
     overlay.classList.add("is-exiting");
@@ -103,6 +122,10 @@
     overlay.style.display = "none";
     running = false;
   }
+  /**
+   * Menjalankan tugas async dan durasi minimum animasi bersamaan.
+   * Hasil/error berasal dari tugas asli; overlay ditutup pada kedua jalur.
+   */
   async function run(mode, task, options = {}) {
     if (running) return null;
     running = true;
@@ -122,6 +145,9 @@
       throw error;
     }
   }
+  /**
+   * Menunggu resource halaman selesai dimuat pada intro pertama.
+   */
   function waitForWindowLoad() {
     if (document.readyState === "complete") return Promise.resolve();
     return new Promise((resolve) =>

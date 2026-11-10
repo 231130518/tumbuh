@@ -1,3 +1,7 @@
+/**
+ * Mesin prediksi kecil untuk arsitektur Dense yang diekspor dari Keras.
+ * Hanya aset model yang diunduh; data anak diproses pada perangkat pengunjung.
+ */
 /* Inferensi Dense/ReLU/Softmax dari bobot Keras asli, seluruhnya di browser. */
 (() => {
   "use strict";
@@ -5,6 +9,9 @@
   const FEATURES = ["Gender", "Age (Month)", "Weight", "Height"];
   let pendingModel;
 
+  /**
+   * Menolak input yang tidak sesuai pilihan jenis kelamin serta batas umur/berat/tinggi formulir.
+   */
   function validateInput(input) {
     if (!input || !["male", "female"].includes(input.sex) ||
         !Number.isInteger(input.age) || input.age < 0 || input.age > 60 ||
@@ -14,6 +21,10 @@
     }
   }
 
+  /**
+   * Mengunduh manifest JSON atau bobot biner dengan timeout.
+   * Manifest dicek ulang ke server; nama berkas bobot mengandung hash untuk menghindari cache versi campur.
+   */
   async function fetchAsset(url, json = false) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
@@ -24,6 +35,10 @@
     } finally { clearTimeout(timer); }
   }
 
+  /**
+   * Memeriksa format manifest, preprocessing, SHA-256 bobot, dimensi lapisan, dan keluaran model.
+   * Jika ada ketidakcocokan, model tidak dijalankan agar hasil tidak berasal dari aset yang rusak.
+   */
   async function loadModel() {
     const manifest = await fetchAsset(new URL("browser-model.json", modelRoot), true);
     const invalid = () => { throw new Error("Berkas model tidak cocok atau rusak. Hubungi pengelola TUMBUH."); };
@@ -48,6 +63,9 @@
       weights[i] = view.getFloat32(i * 4, true);
       if (!Number.isFinite(weights[i])) invalid();
     }
+    /**
+     * Ukuran output setiap lapisan disimpan untuk memvalidasi koneksi dan offset bobot sebelum inferensi.
+     */
     const shapes = new Map([["input_layer", 4]]);
     if (!Array.isArray(manifest.layers) || manifest.layers.length !== 5) invalid();
     let offset = 0;
@@ -76,6 +94,10 @@
     return { manifest, weights };
   }
 
+  /**
+   * Menyimpan Promise pemuatan supaya request paralel berbagi model yang sama.
+   * Jika gagal, cache Promise dihapus agar tombol retry dapat mencoba unduhan baru.
+   */
   function getModel() {
     if (!pendingModel) pendingModel = loadModel().catch((error) => {
       pendingModel = null; // Retry boleh memuat kembali setelah jaringan pulih.
@@ -87,6 +109,10 @@
     return pendingModel;
   }
 
+  /**
+   * Menghitung input × kernel + bias, kemudian ReLU atau Softmax.
+   * Softmax dikurangi logit maksimum sebelum eksponensial untuk menjaga kestabilan numerik.
+   */
   function dense(input, layer, weights) {
     const output = new Float32Array(layer.units);
     for (let j = 0; j < layer.units; j += 1) {
@@ -107,12 +133,19 @@
     return output;
   }
 
+  /**
+   * Menormalisasi tiga fitur numerik dengan scaler training; Gender tetap 1/0.
+   * Menjalankan lapisan sesuai urutan dan memilih indeks probabilitas terbesar pada setiap head.
+   */
   async function predict(input) {
     validateInput(input);
     // Salin input agar perubahan isian saat fetch tidak mengubah pemeriksaan ini.
     const raw = [input.age, input.weight, input.height];
     const sex = input.sex;
     const { manifest, weights } = await getModel();
+    /**
+     * Urutan dan float32 mengikuti input Keras; hanya usia, berat, tinggi memakai mean/scale.
+     */
     const vector = new Float32Array([manifest.genderEncoding[sex],
       ...raw.map((value, i) => (value - manifest.scaler.mean[i]) / manifest.scaler.scale[i])]);
     const values = new Map([["input_layer", vector]]);

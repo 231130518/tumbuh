@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Dashboard peninjauan: daftar dan aksi admin hanya terbuka setelah sesi dan membership valid. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="../../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -35,6 +37,7 @@
         </div>
       </div>
     </header>
+    <!-- Gate tampil selama verifikasi; daftar artikel belum boleh ditampilkan. -->
     <section class="wrap admin-access" id="admin-access" aria-live="polite">
       <h1>Akses admin</h1>
       <p id="admin-access-message" role="status">Memeriksa sesi dan akses admin…</p>
@@ -42,6 +45,7 @@
       <a class="text-link" href="../">Ke halaman login</a>
       <noscript><p>Aktifkan JavaScript untuk masuk dan mengakses artikel.</p></noscript>
     </section>
+    <!-- hidden/inert mencegah tampilan dan interaksi sebelum verifikasi; keamanan database tetap memakai RLS. -->
     <main id="admin-content" hidden inert>
       <section class="admin-review-hero">
         <div class="wrap">
@@ -67,6 +71,7 @@
             </div>
             <button class="btn outline" type="button" id="review-reload">Muat ulang artikel</button>
           </div>
+          <!-- Empat filter yang didukung: semua, pending, published, rejected; tidak ada status draft di tabel. -->
           <div class="review-tabs" role="group" aria-label="Filter artikel">
             <button data-filter="semua" aria-pressed="false">Semua artikel</button
             ><button class="active" data-filter="pending" aria-pressed="true">
@@ -75,6 +80,7 @@
             ><button data-filter="rejected">Ditolak</button>
           </div>
           <p class="review-feedback" id="review-feedback" role="status" hidden></p>
+          <!-- Kartu dan skeleton ditambahkan admin.js; HTML ini tidak menyimpan data artikel. -->
           <div class="review-list" id="review-list" aria-live="polite">
             <p class="body-muted">Memuat artikel untuk peninjauan...</p>
           </div>
@@ -98,7 +104,9 @@
         </div>
       </section>
     </main>
+    <!-- Footer bersama diisi main.js; bukan salinan markup yang perlu diedit pada tiap halaman. -->
     <div id="site-footer"></div>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="../../js/main.js" defer></script>
     <script src="../../js/vendor/supabase-2.119.0.js" defer></script>
     <script src="../../js/vendor/purify-3.4.17.min.js" defer></script>

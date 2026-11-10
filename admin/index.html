@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Login admin melalui Supabase Authentication; membership admin_users diperiksa setelah login. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -15,8 +17,10 @@
     <link rel="apple-touch-icon" href="../assets/logo-tumbuh.png?v=20261108" />
   </head>
   <body data-page="admin-login">
+    <!-- Header diisi main.js supaya navigasi konsisten di seluruh halaman. -->
     <div id="site-header"></div>
     <main class="section login-page">
+      <!-- Email/password dikirim ke Auth oleh admin.js; tidak ada kredensial admin di HTML. -->
       <form class="form-card login-card" id="admin-login-form">
         <span class="eyebrow">RUANG ADMIN</span>
         <h3>Selamat datang kembali.</h3>
@@ -50,6 +54,7 @@
         <noscript><p class="notice">Aktifkan JavaScript untuk login admin.</p></noscript>
       </form>
     </main>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="../js/main.js" defer></script>
     <script src="../js/vendor/supabase-2.119.0.js" defer></script>
     <script src="../js/supabase-config.js" defer></script>

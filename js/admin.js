@@ -1,3 +1,8 @@
+/**
+ * Pengendali tampilan admin, bukan sumber kewenangan database.
+ * Alur: verifikasi sesi → muat artikel → tinjau/revisi → simpan keputusan.
+ * TumbuhSupabase memverifikasi akun, TumbuhAdminArticles menangani request data.
+ */
 /* Alur admin Supabase: guard UX + verifikasi server; operasi tetap tunduk pada RLS. */
 (() => {
   "use strict";
@@ -11,6 +16,9 @@
   const content = $("admin-content");
   let db;
   let verified = false;
+  /**
+   * Token versi UI: nilainya berubah ketika halaman dikunci; callback async wajib membandingkan versi sebelum merender.
+   */
   let generation = 0;
   let requestNumber = 0;
   let checking = null;
@@ -21,19 +29,31 @@
   let filter = "pending";
   let page = 0;
   let currentArticle = null;
+  /**
+   * Mencegah klik aksi ganda; editSnapshot menyimpan artikel awal hanya dalam memori halaman.
+   */
   let actionBusy = false;
   let verifiedUserId = null;
   let editSnapshot = null;
   let editInitial = "";
 
+  /**
+   * Mengambil isian editor saat ini; HTML akan disanitasi kembali sebelum disimpan.
+   */
   function editValues() {
     return { title: $("edit-title").value, subtitle: $("edit-subtitle").value, content: $("content-editor").innerHTML };
   }
 
+  /**
+   * Membandingkan isian dengan kondisi awal untuk menentukan apakah pembatalan perlu konfirmasi.
+   */
   function hasUnsavedEdit() {
     return !!editSnapshot && JSON.stringify(editValues()) !== editInitial;
   }
 
+  /**
+   * Menutup dialog dan membuang isian dari DOM/memori saat batal, selesai, atau sesi tidak sah.
+   */
   function clearEditor() {
     editSnapshot = null;
     editInitial = "";
@@ -43,6 +63,9 @@
     notice($("edit-feedback"), "");
   }
 
+  /**
+   * Mengisi editor dari artikel atau revisi yang sementara disimpan selama verifikasi sesi ulang.
+   */
   function openEditor(draft) {
     if (!verified || !currentArticle || actionBusy) return;
     try {
@@ -63,6 +86,9 @@
     }
   }
 
+  /**
+   * Membatalkan revisi setelah konfirmasi bila ada perubahan; database tidak disentuh.
+   */
   function cancelEdit() {
     if (actionBusy) return;
     if (hasUnsavedEdit() && !confirm("Buang revisi yang belum disimpan?")) return;
@@ -70,6 +96,10 @@
     $("edit-article")?.focus();
   }
 
+  /**
+   * Mengunci kontrol selama penyimpanan dan memperbarui pratinjau dari respons server.
+   * Error biasa mempertahankan isian; error akses diteruskan ke penguncian sesi.
+   */
   async function saveEdit(event) {
     event.preventDefault();
     if (!verified || !editSnapshot || actionBusy || !$("admin-edit-form").reportValidity()) return;
@@ -104,6 +134,9 @@
     }
   }
 
+  /**
+   * Menulis pesan sebagai teks, mengatur visibilitas, dan membedakan role status dengan alert.
+   */
   function notice(element, message, error = false) {
     if (!element) return;
     element.textContent = message;
@@ -112,6 +145,9 @@
     element.classList.toggle("is-error", error);
   }
 
+  /**
+   * Menampilkan informasi login/verifikasi; tombol retry hanya dibuka ketika diperlukan.
+   */
   function gate(message, retry = false) {
     if (loginPage) { notice($("login-note"), message, retry); return; }
     $("admin-access").hidden = false;
@@ -119,6 +155,10 @@
     $("admin-access-retry").hidden = !retry;
   }
 
+  /**
+   * Menyembunyikan halaman dan menghapus data sensitif dari DOM.
+   * Nomor generation/requestNumber dinaikkan supaya respons request lama tidak dapat merender data kembali.
+   */
   function lock() {
     verified = false;
     verifiedUserId = null;
@@ -141,6 +181,9 @@
     if (previewPage) document.title = "Pratinjau Artikel Lengkap — Admin TUMBUH";
   }
 
+  /**
+   * Menyusun tujuan login dan parameter next untuk kembali ke halaman admin yang diminta.
+   */
   function loginUrl(reason) {
     const url = new URL(routes.login, location.origin);
     if (reason) url.searchParams.set("reason", reason);
@@ -148,6 +191,9 @@
     return url.href;
   }
 
+  /**
+   * Memvalidasi next dengan daftar rute internal; URL luar tidak boleh menjadi tujuan setelah login.
+   */
   function loginDestination() {
     const next = new URLSearchParams(location.search).get("next");
     const fallback = new URL(routes.dashboard, location.origin).href;
@@ -163,6 +209,9 @@
     return fallback;
   }
 
+  /**
+   * Mengunci data dan menangani sesi kosong atau akun non-admin; kegagalan jaringan memberi opsi retry.
+   */
   async function accessFailure(error) {
     lock();
     if (error.code === "forbidden") {
@@ -178,12 +227,18 @@
     gate(error.message || "Akses admin belum dapat diverifikasi. Coba lagi.", true);
   }
 
+  /**
+   * Memformat tanggal database untuk tampilan Indonesia dan menangani tanggal yang tidak valid.
+   */
   function dateLabel(value) {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? "Tanggal tidak tersedia" :
       new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "long", year: "numeric" }).format(date);
   }
 
+  /**
+   * Membuat elemen dengan textContent agar judul/subjudul tidak diperlakukan sebagai kode HTML.
+   */
   function node(tag, className, text) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -191,11 +246,17 @@
     return el;
   }
 
+  /**
+   * Membuat badge status dari daftar status yang dikenal, bukan nama kelas CSS dari input bebas.
+   */
   function statusNode(status) {
     const safe = articles.statuses[status] ? status : "pending";
     return node("span", `review-status ${safe}`, `● ${articles.statuses[status] || "Status tidak dikenal"}`);
   }
 
+  /**
+   * Menyusun kartu peninjauan beserta sampul, penulis, tanggal, dan tautan pratinjau.
+   */
   function card(article) {
     const item = node("article", "review-item");
     const thumb = node("div", "review-thumb");
@@ -218,11 +279,17 @@
     return item;
   }
 
+  /**
+   * Memisahkan masalah hak akses dari masalah pemuatan data agar penanganannya sesuai.
+   */
   async function dataFailure(error, target) {
     if (error instanceof api.AccessError) await accessFailure(error);
     else notice(target, error.message || "Data belum dapat dimuat. Coba lagi.", true);
   }
 
+  /**
+   * Menampilkan skeleton, memuat filter/halaman aktif, dan mengabaikan respons yang sudah kedaluwarsa.
+   */
   async function loadList() {
     if (!verified) return;
     const version = generation;
@@ -253,6 +320,9 @@
     }
   }
 
+  /**
+   * Merender satu artikel setelah HTML isinya dibersihkan; tombol mengikuti status yang tersimpan.
+   */
   function renderPreview(article) {
     // Sanitasi sebelum menampilkan bagian artikel; kegagalan sanitizer menutup pratinjau.
     const cleanBody = articles.sanitize(article.content);
@@ -286,6 +356,9 @@
     window.TumbuhAOS?.refresh();
   }
 
+  /**
+   * Memuat ID dari query URL; kondisi kosong berbeda dari kondisi server gagal.
+   */
   async function loadPreview() {
     if (!verified) return;
     const version = generation;
@@ -312,6 +385,9 @@
     }
   }
 
+  /**
+   * Meminta konfirmasi terbit/tolak, menonaktifkan aksi ganda, dan menampilkan status dari server.
+   */
   async function decide(status) {
     if (!verified || !currentArticle || actionBusy) return;
     if (!confirm(`Yakin ingin ${status === "published" ? "menerbitkan" : "menolak"} artikel ini? Status akan disimpan di database.`)) return;
@@ -334,6 +410,9 @@
     }
   }
 
+  /**
+   * Meminta konfirmasi hapus permanen, lalu kembali ke daftar hanya setelah penghapusan terkonfirmasi.
+   */
   async function deleteArticle() {
     if (!verified || !currentArticle || actionBusy) return;
     const article = currentArticle;
@@ -358,6 +437,10 @@
     }
   }
 
+  /**
+   * Memverifikasi identitas dan membership lagi sebelum menampilkan halaman.
+   * Revisi sementara dipulihkan hanya jika UUID hasil verifikasi sama dengan pemilik editor sebelumnya.
+   */
   function refreshAccess() {
     if (checking) return checking;
     if (signingIn || loggingOut) return Promise.resolve();
@@ -401,6 +484,9 @@
     return checking;
   }
 
+  /**
+   * Mengirim email/password ke Supabase Auth, lalu memeriksa admin_users sebelum mengarahkan pengguna.
+   */
   async function login(event) {
     event.preventDefault();
     if (signingIn || !$("admin-login-form").reportValidity()) return;
@@ -435,6 +521,9 @@
     }
   }
 
+  /**
+   * Menghapus sesi browser ini melalui SDK dan membersihkan tampilan sebelum navigasi ke login.
+   */
   async function logout() {
     if (loggingOut) return;
     loggingOut = true;
@@ -450,6 +539,10 @@
     } finally { loggingOut = false; }
   }
 
+  /**
+   * Memasang listener login, editor, filter, sesi, dan navigasi.
+   * Callback onAuthStateChange tetap sinkron; request lanjutan dijadwalkan di luar callback.
+   */
   function init() {
     try { db = api.getClient(); }
     catch (error) {

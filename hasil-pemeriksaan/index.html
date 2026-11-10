@@ -1,6 +1,8 @@
 <!doctype html>
+<!-- Halaman hasil: input dibaca dari sesi tab dan model dijalankan pada perangkat pengunjung. -->
 <html lang="id">
   <head>
+    <!-- Loader awal menyiapkan tampilan sebelum body dibaca. Script fitur halaman memakai defer di bagian bawah. -->
     <script src="../js/loading.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,6 +16,7 @@
     <link rel="apple-touch-icon" href="../assets/logo-tumbuh.png?v=20261108" />
   </head>
   <body data-page="results">
+    <!-- Header diisi main.js supaya navigasi konsisten di seluruh halaman. -->
     <div id="site-header"></div>
     <main>
       <section class="results-hero" aria-labelledby="results-title">
@@ -43,6 +46,7 @@
       </section>
       <section class="results-content" aria-label="Ringkasan pemeriksaan anak">
         <div class="wrap">
+          <!-- Ringkasan sesuai input yang lolos validasi ulang, bukan data contoh. -->
           <div class="child-summary" id="child-summary">
             <h2 class="eyebrow">DATA PEMERIKSAAN ANAK</h2>
             <dl class="child-data-grid">
@@ -82,6 +86,7 @@
             <p id="growth-result-message" role="status" aria-live="polite">Isi data pemeriksaan untuk menjalankan analisis.</p>
             <button class="btn outline" id="growth-result-retry" type="button" hidden>Coba analisis lagi</button>
             <div class="result-grid">
+              <!-- Atribut head memetakan kartu TB/U ke keluaran TBU model, terlepas dari urutan array hasil. -->
               <article class="result-tile" data-growth-head="TBU">
                 <h3>TB/U</h3>
                 <p class="result-index-name">Tinggi badan menurut umur</p>
@@ -90,6 +95,7 @@
                   Hasil model untuk tinggi badan menurut umur akan muncul setelah analisis.
                 </p>
               </article>
+              <!-- Kartu BB/U membaca head BBU. -->
               <article class="result-tile" data-growth-head="BBU">
                 <h3>BB/U</h3>
                 <p class="result-index-name">Berat badan menurut umur</p>
@@ -98,6 +104,7 @@
                   Hasil model untuk berat badan menurut umur akan muncul setelah analisis.
                 </p>
               </article>
+              <!-- Kartu BB/TB membaca head BBTB. -->
               <article class="result-tile" data-growth-head="BBTB">
                 <h3>BB/TB</h3>
                 <p class="result-index-name">
@@ -110,6 +117,7 @@
               </article>
             </div>
           </div>
+          <!-- Keterangan batas hasil: estimasi model tidak menggantikan penilaian tenaga kesehatan. -->
           <aside class="results-disclaimer">
             <h2>Hasil model, bukan diagnosis</h2>
             <p>
@@ -127,7 +135,9 @@
         </div>
       </section>
     </main>
+    <!-- Footer bersama diisi main.js; bukan salinan markup yang perlu diedit pada tiap halaman. -->
     <div id="site-footer"></div>
+    <!-- Script defer dieksekusi sesuai urutan setelah HTML dibaca. Pertahankan SDK/config/client sebelum modul yang memakainya. -->
     <script src="../js/growth-model.js" defer></script>
     <script src="../js/main.js" defer></script>
     <script

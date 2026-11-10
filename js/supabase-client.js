@@ -1,9 +1,16 @@
+/**
+ * Pembungkus SDK resmi: konfigurasi, batas waktu request, dan verifikasi admin.
+ * Dua client dipisahkan agar kiriman publik tidak memakai token admin yang sedang login.
+ */
 /* SDK resmi; satu client per halaman. RLS adalah batas otorisasi di server. */
 (() => {
   "use strict";
   let client;
   let publicClient;
 
+  /**
+   * Error bertipe khusus agar UI dapat membedakan konfigurasi, verifikasi, sesi kosong, dan akses ditolak.
+   */
   class AccessError extends Error {
     constructor(code, message) {
       super(message);
@@ -12,6 +19,9 @@
     }
   }
 
+  /**
+   * Memastikan URL dasar HTTPS, key frontend publishable/anon, serta nama kolom UUID valid.
+   */
   function getConfig() {
     const config = window.TumbuhSupabaseConfig || {};
     let url;
@@ -37,6 +47,10 @@
     return config;
   }
 
+  /**
+   * Membatasi request hingga 20 detik dan meneruskan pembatalan dari pemanggil.
+   * Timer dan listener dibersihkan meskipun request gagal.
+   */
   async function timedFetch(input, options = {}) {
     const controller = new AbortController();
     const parent = options.signal || (input instanceof Request ? input.signal : null);
@@ -52,6 +66,9 @@
     }
   }
 
+  /**
+   * Membuat satu client admin per halaman; SDK menangani persistensi dan pembaruan token sesi.
+   */
   function getClient() {
     if (client) return client;
     const config = getConfig();
@@ -69,6 +86,10 @@
     return client;
   }
 
+  /**
+   * Memeriksa keberadaan sesi, memvalidasi identitas melalui getUser, lalu membaca membership admin_users.
+   * getSession saja tidak dijadikan bukti bahwa pengguna berhak mengelola artikel.
+   */
   async function requireAdmin() {
     const db = getClient();
     const { data: sessionData, error: sessionError } = await db.auth.getSession();
@@ -95,6 +116,9 @@
     return userData.user;
   }
 
+  /**
+   * Membuat client anon tanpa persistensi sesi agar baca/kirim publik tidak memakai identitas admin.
+   */
   function getPublicClient() {
     if (publicClient) return publicClient;
     const config = getConfig();

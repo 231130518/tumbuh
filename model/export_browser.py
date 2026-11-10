@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 
+# Backend dipilih sebelum import Keras; Python ini hanya alat konversi, bukan server website.
 os.environ.setdefault("KERAS_BACKEND", "jax")
 import keras
 import numpy as np
@@ -23,7 +24,9 @@ class ScalerState:
     """Hanya menampung atribut scaler; tidak memuat kode scikit-learn dari pickle."""
 
 
+# Batasi jenis objek yang boleh dimuat dari pickle; format tak dikenal harus ditolak.
 class RestrictedScalerReader(NumpyUnpickler):
+    # Ganti kelas StandardScaler dengan penampung state; whitelist mengizinkan objek numpy yang dibutuhkan.
     def find_class(self, module, name):
         if (module, name) == ("sklearn.preprocessing._data", "StandardScaler"):
             return ScalerState
@@ -40,6 +43,7 @@ class RestrictedScalerReader(NumpyUnpickler):
         return super().find_class(module, name)
 
 
+# Baca nilai mean/scale dan cek urutan fitur. Gender tidak termasuk tiga fitur yang distandardisasi.
 def read_scaler():
     path = ROOT / "scaler_tumbuh.pkl"
     with path.open("rb") as stream:
@@ -52,6 +56,7 @@ def read_scaler():
     return scaler
 
 
+# Ambil bobot model asli dan metadata; tidak melakukan training ulang atau mengubah kelas hasil.
 def export():
     features = json.loads((ROOT / "features.json").read_text())
     labels = json.loads((ROOT / "labels.json").read_text())
@@ -59,6 +64,7 @@ def export():
     scaler = read_scaler()
     model = keras.models.load_model(ROOT / "model_tumbuh.keras", compile=False, safe_mode=True)
     assert model.input_shape == (None, 4) and list(model.output_names) == list(HEADS)
+    # Manifest menjelaskan cara JavaScript membaca bobot dan menghubungkan setiap head dengan labelnya.
     manifest = {
         "format": "tumbuh-dense-v1",
         "features": features,
@@ -70,6 +76,7 @@ def export():
     }
     chunks = []
     offset = 0
+    # Setiap Dense disimpan sebagai kernel lalu bias. Offset dihitung dalam jumlah float, bukan byte.
     for layer in model.layers:
         if isinstance(layer, keras.layers.InputLayer):
             assert layer.name == "input_layer"
@@ -87,15 +94,18 @@ def export():
             "activation": config["activation"],
             "kernelOffset": offset, "biasOffset": offset + kernel.size,
         })
+        # Format <f4 berarti float32 little-endian, sesuai DataView pada growth-model.js.
         chunks.extend([kernel.astype("<f4").tobytes(), bias.astype("<f4").tobytes()])
         offset += kernel.size + bias.size
     assert len(manifest["layers"]) == 5
     for head in manifest["outputs"]:
         assert len(head["labels"]) == model.get_layer(head["name"]).units
     weights = b"".join(chunks)
+    # Hash memeriksa integritas bobot dan membedakan nama berkas antarversi model.
     digest = hashlib.sha256(weights).hexdigest()
     filename = f"weights-{digest[:16]}.bin"
     manifest["weights"] = {"file": filename, "bytes": len(weights), "sha256": digest}
+    # Catat hash artefak sumber agar asal konversi dapat diperiksa tanpa menyimpan dataset pelatihan.
     for name in ("model_tumbuh.keras", "scaler_tumbuh.pkl", "features.json", "labels.json"):
         manifest["source"]["sha256"][name] = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
     manifest["modelId"] = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
@@ -105,5 +115,6 @@ def export():
     return model, scaler, manifest
 
 
+# Jalankan ekspor hanya jika script dipanggil langsung, bukan ketika modul diimpor.
 if __name__ == "__main__":
     export()

@@ -1,3 +1,7 @@
+/**
+ * Alur formulir pengunjung: validasi → upload sampul → INSERT artikel pending.
+ * Form baru dikosongkan setelah server mengonfirmasi penerimaan kiriman.
+ */
 /* Pengiriman nyata: Storage + INSERT pending. Draf lokal bukan kiriman admin. */
 (() => {
   "use strict";
@@ -16,6 +20,9 @@
   let busy = false;
   let attempt = null;
 
+  /**
+   * Menampilkan status pengiriman atau kesalahan tanpa menyisipkan HTML dari server.
+   */
   function message(text, error = false) {
     note.hidden = false;
     note.textContent = text;
@@ -23,10 +30,16 @@
     note.classList.toggle("is-error", error);
   }
 
+  /**
+   * Mengambil draf teks dari browser; JSON rusak atau penyimpanan ditolak dianggap tidak ada draf.
+   */
   function readDraft() {
     try { return JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch { return null; }
   }
 
+  /**
+   * Mengambil isian, merapikan spasi tepi, dan menyiapkan HTML bersih beserta teks untuk validasi panjang.
+   */
   function fields() {
     const sanitized = window.TumbuhArticleContent.html(editor.innerHTML);
     return {
@@ -39,6 +52,9 @@
     };
   }
 
+  /**
+   * Memeriksa batas isian sebelum upload; pembatasan database tetap diperlukan karena client bisa dilewati.
+   */
   function validate(data) {
     if (data.author_name.length < 2 || data.author_name.length > 100) throw new Error("Nama penulis harus 2–100 karakter.");
     if (data.title.length < 5 || data.title.length > 150) throw new Error("Judul harus 5–150 karakter.");
@@ -47,6 +63,10 @@
     if (data.author_email && (data.author_email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.author_email))) throw new Error("Alamat email belum valid.");
   }
 
+  /**
+   * Memeriksa MIME, ukuran, signature file, dan hasil decode gambar.
+   * Object URL sementara selalu dibebaskan setelah selesai agar memori tidak menumpuk.
+   */
   async function validateImage(file) {
     if (!file || !extensions[file.type]) throw new Error("Pilih tepat satu gambar JPG, PNG, atau WebP.");
     if (!file.size || file.size > MAX_IMAGE_BYTES) throw new Error("Ukuran gambar maksimal 5 MB.");
@@ -70,17 +90,27 @@
     } finally { URL.revokeObjectURL(url); }
   }
 
+  /**
+   * Menghitung SHA-256 dari isian dan bytes gambar untuk mengenali retry kiriman yang sama.
+   */
   async function fingerprint(data, file) {
     const payload = new Blob([JSON.stringify(data), await file.arrayBuffer()]);
     const hash = await crypto.subtle.digest("SHA-256", await payload.arrayBuffer());
     return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   }
 
+  /**
+   * Menyimpan metadata percobaan ke sessionStorage; kegagalan penyimpanan tidak membatalkan proses.
+   */
   function remember() {
     // Metadata retry saja, bukan isi artikel, password, sesi, atau hak admin.
     try { sessionStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempt)); } catch { /* Retry dalam tab masih berfungsi. */ }
   }
 
+  /**
+   * Menggunakan kembali path upload jika fingerprint cocok dan percobaan belum lebih dari 24 jam.
+   * Kiriman berbeda mendapat UUID baru agar tidak menimpa gambar orang lain.
+   */
   function getAttempt(hash, extension) {
     if (!attempt) {
       try { attempt = JSON.parse(sessionStorage.getItem(ATTEMPT_KEY)); } catch { attempt = null; }
@@ -95,6 +125,9 @@
     return attempt;
   }
 
+  /**
+   * Mengubah error teknis upload menjadi pesan yang membedakan masalah izin dan koneksi.
+   */
   function uploadError(error) {
     if (["400", "401", "403"].includes(String(error.statusCode)) || /row.level|permission|unauthorized/i.test(error.message || "")) {
       return new Error("Gambar belum dapat diunggah karena layanan belum mengizinkan pengiriman publik. Hubungi pengelola; artikel belum terkirim.");
@@ -102,6 +135,9 @@
     return new Error("Unggah gambar belum berhasil. Periksa koneksi lalu kirim lagi; isian tetap tersedia.");
   }
 
+  /**
+   * Upload tanpa overwrite; pada respons duplikat, cocokkan hash gambar yang sudah ada sebelum melanjutkan.
+   */
   async function upload(db, job, file) {
     if (job.uploaded) return;
     message("Mengunggah gambar sampul…");
@@ -129,6 +165,9 @@
     remember();
   }
 
+  /**
+   * Menonaktifkan isian dan tombol selama proses agar kiriman tidak berubah di tengah request.
+   */
   function setBusy(value) {
     busy = value;
     form.setAttribute("aria-busy", String(value));
@@ -137,6 +176,10 @@
     sendButton.textContent = value ? "Mengirim artikel…" : "Kirim Artikel untuk Ditinjau ↗";
   }
 
+  /**
+   * Mengurutkan validasi, upload, dan INSERT pending.
+   * Retry dianggap sudah diterima hanya jika constraint unik khusus kiriman mengonfirmasinya.
+   */
   async function submit(event) {
     event.preventDefault();
     if (busy || !form.reportValidity()) return;
@@ -175,6 +218,9 @@
     } finally { setBusy(false); }
   }
 
+  /**
+   * Draf publik hanya menyimpan teks di browser; tidak mengunggah gambar atau membuat baris artikel.
+   */
   draftButton.addEventListener("click", () => {
     if (busy) return;
     try {
@@ -186,6 +232,9 @@
     } catch (error) { message(error.message || "Draf tidak dapat disimpan di browser ini.", true); }
   });
 
+  /**
+   * Pulihkan isian setelah konfirmasi agar tulisan yang sedang dikerjakan tidak tertimpa tanpa sengaja.
+   */
   restoreButton.addEventListener("click", () => {
     if (busy) return;
     const draft = readDraft();
@@ -204,6 +253,9 @@
   });
 
   form.addEventListener("submit", submit);
+  /**
+   * Sanitasi HTML clipboard sebelum masuk ke contenteditable, bukan hanya setelah tombol Kirim ditekan.
+   */
   editor.addEventListener("paste", (event) => {
     if (!event.clipboardData) return;
     event.preventDefault();

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Alias URL lama. Pengalihan inline tidak menunggu unduhan JS/CSS dan tidak menampilkan halaman perantara. -->
 <html lang="id">
   <head>
     <meta charset="utf-8" />
@@ -9,12 +10,16 @@
     <script>
       // Langsung berpindah tanpa menunggu file JS, CSS, atau gambar.
       const destination = new URL("pratinjau/", location.href);
+      /**
+       * Pertahankan query seperti id/next dan hash tujuan; replace tidak menambah alias ke riwayat Back.
+       */
       destination.search = location.search;
       destination.hash = location.hash;
       location.replace(destination.href);
     </script>
   </head>
   <body>
+    <!-- Tautan manual hanya terlihat jika JavaScript dinonaktifkan. -->
     <noscript><p><a href="pratinjau/">Buka halaman TUMBUH</a></p></noscript>
   </body>
 </html>
