@@ -8,6 +8,12 @@
   const modelRoot = new URL("../model/", document.currentScript.src);
   const FEATURES = ["Gender", "Age (Month)", "Weight", "Height"];
   let pendingModel;
+  let lastLoadProgress;
+  const listeners = new Set();
+  function reportLoad(label, percent = null) {
+    lastLoadProgress = [label, percent];
+    for (const listener of listeners) listener(label, percent);
+  }
 
   /**
    * Menolak input yang tidak sesuai pilihan jenis kelamin serta batas umur/berat/tinggi formulir.
@@ -25,13 +31,39 @@
    * Mengunduh manifest JSON atau bobot biner dengan timeout.
    * Manifest dicek ulang ke server; nama berkas bobot mengandung hash untuk menghindari cache versi campur.
    */
-  async function fetchAsset(url, json = false) {
+  async function fetchAsset(url, expectedBytes) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
+    let timer;
+    function resetTimeout() {
+      clearTimeout(timer);
+      timer = setTimeout(() => controller.abort(), 20000);
+    }
+    resetTimeout();
     try {
-      const response = await fetch(url, { signal: controller.signal, cache: json ? "no-cache" : "default" });
+      const response = await fetch(url, { signal: controller.signal, cache: !expectedBytes ? "no-cache" : "default" });
       if (!response.ok) throw new Error("Model belum dapat dimuat. Periksa koneksi, lalu coba lagi.");
-      return await (json ? response.json() : response.arrayBuffer());
+      if (!expectedBytes) return await response.json();
+      if (!response.body?.getReader) return await response.arrayBuffer();
+      const reader = response.body.getReader();
+      const bytes = new Uint8Array(expectedBytes);
+      let received = 0;
+      let percent = -1;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (received + value.length > expectedBytes) {
+          controller.abort();
+          throw new Error("Ukuran berkas bobot model tidak sesuai.");
+        }
+        bytes.set(value, received);
+        received += value.length;
+        resetTimeout();
+        const next = Math.floor(received * 100 / expectedBytes);
+        if (next !== percent) reportLoad("Mengunduh bobot model", next);
+        percent = next;
+      }
+      if (received !== expectedBytes) throw new Error("Unduhan bobot model belum lengkap. Coba lagi.");
+      return bytes.buffer;
     } finally { clearTimeout(timer); }
   }
 
@@ -40,7 +72,8 @@
    * Jika ada ketidakcocokan, model tidak dijalankan agar hasil tidak berasal dari aset yang rusak.
    */
   async function loadModel() {
-    const manifest = await fetchAsset(new URL("browser-model.json", modelRoot), true);
+    reportLoad("Memuat konfigurasi model");
+    const manifest = await fetchAsset(new URL("browser-model.json", modelRoot));
     const invalid = () => { throw new Error("Berkas model tidak cocok atau rusak. Hubungi pengelola TUMBUH."); };
     if (manifest.format !== "tumbuh-dense-v1" ||
         JSON.stringify(manifest.features) !== JSON.stringify(FEATURES) ||
@@ -52,7 +85,11 @@
         !/^[a-f0-9]{64}$/.test(manifest.modelId || "") ||
         !/^weights-[a-f0-9]{16}\.bin$/.test(manifest.weights?.file || "") ||
         !/^[a-f0-9]{64}$/.test(manifest.weights?.sha256 || "")) invalid();
-    const buffer = await fetchAsset(new URL(manifest.weights.file, modelRoot));
+    if (!Number.isSafeInteger(manifest.weights.bytes) || manifest.weights.bytes <= 0 ||
+        manifest.weights.bytes > 5 * (256 * 256 + 256) * 4) invalid();
+    reportLoad("Mengunduh bobot model", 0);
+    const buffer = await fetchAsset(new URL(manifest.weights.file, modelRoot), manifest.weights.bytes);
+    reportLoad("Memeriksa integritas model");
     if (!buffer.byteLength || buffer.byteLength % 4 || buffer.byteLength !== manifest.weights.bytes) invalid();
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", buffer)),
       (value) => value.toString(16).padStart(2, "0")).join("");
@@ -91,6 +128,7 @@
           manifest.layers.find((layer) => layer.name === output.name)?.activation !== "softmax") invalid();
       heads.add(output.name);
     }
+    reportLoad("Model siap");
     return { manifest, weights };
   }
 
@@ -137,12 +175,21 @@
    * Menormalisasi tiga fitur numerik dengan scaler training; Gender tetap 1/0.
    * Menjalankan lapisan sesuai urutan dan memilih indeks probabilitas terbesar pada setiap head.
    */
-  async function predict(input) {
+  async function predict(input, onProgress = () => {}) {
     validateInput(input);
     // Salin input agar perubahan isian saat fetch tidak mengubah pemeriksaan ini.
     const raw = [input.age, input.weight, input.height];
     const sex = input.sex;
-    const { manifest, weights } = await getModel();
+    if (pendingModel && lastLoadProgress) onProgress(...lastLoadProgress);
+    listeners.add(onProgress);
+    let model;
+    try {
+      model = await getModel();
+    } finally {
+      listeners.delete(onProgress);
+    }
+    const { manifest, weights } = model;
+    onProgress("Menghitung klasifikasi pertumbuhan");
     /**
      * Urutan dan float32 mengikuti input Keras; hanya usia, berat, tinggi memakai mean/scale.
      */

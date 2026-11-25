@@ -338,7 +338,11 @@ async function growthResults() {
     card.querySelector(".result-description").textContent = "Menunggu hasil analisis model.";
   }
   try {
-    const task = () => window.TumbuhGrowthModel.predict(input);
+    const task = () => window.TumbuhGrowthModel.predict(input, (label, percent) => {
+      const text = percent == null ? label + "…" : label + " · " + percent + "%";
+      message.textContent = text;
+      window.TumbuhLoader?.showPredictionProgress?.(text, percent);
+    });
     const prediction = window.TumbuhLoader && !window.TumbuhLoader.isRunning()
       ? await window.TumbuhLoader.run("prediction", task)
       : await task();

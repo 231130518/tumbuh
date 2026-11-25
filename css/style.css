@@ -2817,7 +2817,7 @@ html.tumbuh-is-loading body {
 .tumbuh-loader.is-animating .loader-reveal {
   animation: tumbuh-loader-reveal 1.35s ease-in-out 0.2s both;
 }
-.tumbuh-loader.is-prediction .loader-track {
+.tumbuh-loader.is-prediction:not(.has-progress) .loader-track {
   display: none;
 }
 .tumbuh-loader.is-exiting {

@@ -86,6 +86,7 @@
     element.classList.remove("is-exiting", "is-animating");
     element.style.display = "block"; // harus terlihat sebelum animasi diulang
     element.classList.toggle("is-prediction", mode === "prediction");
+    element.classList.remove("has-progress");
     element.querySelector("#tumbuh-loading-caption").textContent =
       mode === "prediction"
         ? "Sedang memprediksi pertumbuhan anak..."
@@ -132,7 +133,13 @@
     }
   }
 
-  window.TumbuhLoader = { run, isRunning: () => running };
+  function showPredictionProgress(text, percent) {
+    if (!running || !overlay?.classList.contains("is-prediction")) return;
+    overlay.querySelector("#tumbuh-loading-caption").textContent = text;
+    overlay.classList.toggle("has-progress", percent != null);
+    if (percent != null) overlay.querySelector(".loader-fill").style.width = percent + "%";
+  }
+  window.TumbuhLoader = { run, showPredictionProgress, isRunning: () => running };
   if (!shouldPlayIntro) return;
 
   // Rekam juga aset cache yang selesai sebelum parser mencapai akhir dokumen.
