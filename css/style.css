@@ -3667,6 +3667,52 @@ body[data-page="home"] .hero .wrap {
   padding-bottom: 120px;
 }
 
+/* Komposisi hero beranda: judul, ajakan utama, lalu catatan pendukung. */
+.hero-content {
+  margin-inline: auto;
+  text-align: center;
+  max-width: 54rem;
+}
+.hero-content h1 {
+  max-width: none;
+  margin: clamp(20px, 3vh, 34px) auto 18px;
+  font-size: clamp(44px, 6vw, 84px);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.hero-content h1 em {
+  font-size: inherit;
+}
+.hero-content .hero-description {
+  max-width: 52ch;
+  margin: 0 auto 26px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.hero-buttons {
+  justify-content: center;
+}
+.hero-description-small {
+  max-width: 52ch;
+  margin: 22px auto 0;
+  text-wrap: balance;
+}
+.hero-visual::after {
+  background: linear-gradient(0deg, #112e2bd9, #112e2ba8 80%),
+    radial-gradient(ellipse at center, #112e2bd9, transparent 78%);
+}
+@media (max-width: 480px) {
+  .hero-content h1 { font-size: clamp(38px, 10vw, 48px); }
+  .hero-content .hero-description { font-size: 15px; }
+  .hero-buttons {
+    display: grid;
+    justify-content: stretch;
+    max-width: 19rem;
+    margin-inline: auto;
+    gap: 10px;
+  }
+}
+
 /* Draft 4.7: area hasil selebar konten desktop, bukan panel sempit 800 px. */
 body[data-page="results"] .wrap {
   width: min(1296px, calc(100% - 144px));
