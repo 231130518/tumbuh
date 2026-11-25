@@ -44,7 +44,7 @@ function header() {
         <a href="${routes.home}">Beranda</a>
         <a href="${routes.home}#mengenal">${compactLinks ? "Tentang Kami" : "Kenali Tumbuh"}</a>
         <a href="${routes.articles}">${compactLinks ? "Edukasi" : "Artikel Edukasi"}</a>
-        ${compactLinks ? "" : `<a href="${routes.submit}">Kirim Artikel</a>`}
+        ${compactLinks ? "" : `<a href="${routes.submit}" target="_blank" rel="noopener">Kirim Artikel</a>`}
       </nav>
       <a class="nav-cta" href="${routes.home}#cek">Cek Pertumbuhan ↗</a>
       <button class="menu-toggle" id="menu-toggle" aria-label="Buka navigasi" aria-expanded="false" aria-controls="navlinks">☰</button>
@@ -90,7 +90,7 @@ function footer() {
         <p class="footer-description">Menemani orang tua memahami setiap langkah kecil perjalanan pertumbuhan anak dengan informasi yang ramah dan mudah dipahami.</p></div>
       <div><h4>Jelajahi</h4><div class="footer-links">
         <a href="${routes.home}">Beranda</a><a href="${routes.home}#mengenal">Kenali Pertumbuhan</a>
-        <a href="${routes.articles}">Artikel Edukasi</a><a href="${routes.submit}">Kirim Artikel</a>
+        <a href="${routes.articles}">Artikel Edukasi</a><a href="${routes.submit}" target="_blank" rel="noopener">Kirim Artikel</a>
       </div></div>
       <div><h4>Tentang TUMBUH</h4><p>Teman tumbuh kembang anak usia 0–60 bulan.</p>
         <p>Materi edukasi bukan pengganti konsultasi tenaga kesehatan.</p></div>
