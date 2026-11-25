@@ -19,7 +19,6 @@
   const shouldPlayIntro = forcePreview || !sessionHasOpened;
   if (shouldPlayIntro) document.documentElement.classList.add("tumbuh-preload");
 
-  const MIN_DURATION = 2320; // Figma: 200 ms jeda + 1350 ms smart animate + 750 ms hold.
   const EXIT_DURATION = 280; // Figma: dissolve 280 ms.
   let overlay = null;
   let running = false;
@@ -122,54 +121,58 @@
     overlay.style.display = "none";
     running = false;
   }
-  /**
-   * Menjalankan tugas async dan durasi minimum animasi bersamaan.
-   * Hasil/error berasal dari tugas asli; overlay ditutup pada kedua jalur.
-   */
-  async function run(mode, task, options = {}) {
+  async function run(mode, task) {
     if (running) return null;
     running = true;
-    const current = present(mode);
-    current.style.display = "block";
-    const minMs =
-      options.minDurationMs == null ? MIN_DURATION : options.minDurationMs;
+    present(mode);
     try {
-      const [value] = await Promise.all([
-        Promise.resolve().then(task),
-        sleep(minMs),
-      ]);
+      return await task();
+    } finally {
       await dismiss();
-      return value;
-    } catch (error) {
-      await dismiss();
-      throw error;
     }
   }
-  /**
-   * Menunggu resource halaman selesai dimuat pada intro pertama.
-   */
-  function waitForWindowLoad() {
-    if (document.readyState === "complete") return Promise.resolve();
-    return new Promise((resolve) =>
-      window.addEventListener("load", resolve, { once: true }),
-    );
-  }
+
   window.TumbuhLoader = { run, isRunning: () => running };
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      if (!shouldPlayIntro) return;
-      run("startup", waitForWindowLoad)
-        .then(markOpened)
-        .catch(() => {
-          document.documentElement.classList.remove(
-            "tumbuh-is-loading",
-            "tumbuh-preload",
-          );
-          document.dispatchEvent(new CustomEvent("tumbuh:loader-dismissed"));
-          markOpened();
-        });
-    },
-    { once: true },
-  );
+  if (!shouldPlayIntro) return;
+
+  // Rekam juga aset cache yang selesai sebelum parser mencapai akhir dokumen.
+  const settled = new WeakSet();
+  let update = () => {};
+  function onResource(event) {
+    settled.add(event.target);
+    update();
+  }
+  document.addEventListener("load", onResource, true);
+  document.addEventListener("error", onResource, true);
+
+  function start() {
+    if (document.readyState === "loading") return;
+    document.removeEventListener("readystatechange", start);
+    run("startup", async () => {
+      const resources = [...document.querySelectorAll(
+        'script[src], link[rel~="stylesheet"][href], img[src]:not([loading="lazy"])'
+      )];
+      const fill = overlay.querySelector(".loader-fill");
+      const caption = overlay.querySelector("#tumbuh-loading-caption");
+      function display(percent) {
+        fill.style.width = percent + "%";
+        caption.textContent = "Memuat halaman · " + percent + "%";
+      }
+      // Satu langkah terakhir untuk aset lain yang ditunggu oleh window.load.
+      update = () => {
+        const done = resources.filter(item => settled.has(item) || item.complete === true);
+        display(Math.floor(100 * done.length / (resources.length + 1)));
+      };
+      update();
+      if (document.readyState !== "complete") {
+        await new Promise(resolve => window.addEventListener("load", resolve, { once: true }));
+      }
+      document.removeEventListener("load", onResource, true);
+      document.removeEventListener("error", onResource, true);
+      update = () => {};
+      display(100);
+    }).then(markOpened);
+  }
+  document.addEventListener("readystatechange", start);
+  start();
 })();

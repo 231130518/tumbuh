@@ -2817,8 +2817,8 @@ html.tumbuh-is-loading body {
 .tumbuh-loader.is-animating .loader-reveal {
   animation: tumbuh-loader-reveal 1.35s ease-in-out 0.2s both;
 }
-.tumbuh-loader.is-animating .loader-fill {
-  animation: tumbuh-loader-progress 1.35s ease-in-out 0.2s both;
+.tumbuh-loader.is-prediction .loader-track {
+  display: none;
 }
 .tumbuh-loader.is-exiting {
   animation: tumbuh-loader-exit 0.28s ease-out both;
@@ -2829,14 +2829,6 @@ html.tumbuh-is-loading body {
   }
   to {
     opacity: 1;
-  }
-}
-@keyframes tumbuh-loader-progress {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
   }
 }
 @keyframes tumbuh-loader-exit {
@@ -2887,9 +2879,6 @@ html.tumbuh-is-loading body {
   .tumbuh-loader.is-animating .loader-logo,
   .tumbuh-loader.is-animating .loader-reveal {
     animation: tumbuh-loader-reveal 0.01ms ease-in both;
-  }
-  .tumbuh-loader.is-animating .loader-fill {
-    animation: tumbuh-loader-progress 0.01ms ease-in both;
   }
 }
 

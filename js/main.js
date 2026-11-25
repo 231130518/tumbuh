@@ -340,7 +340,7 @@ async function growthResults() {
   try {
     const task = () => window.TumbuhGrowthModel.predict(input);
     const prediction = window.TumbuhLoader && !window.TumbuhLoader.isRunning()
-      ? await window.TumbuhLoader.run("prediction", task, { minDurationMs: 350 })
+      ? await window.TumbuhLoader.run("prediction", task)
       : await task();
     // Label asli dipertahankan agar makna kelas tidak diterjemahkan secara keliru.
     for (const card of cards) {
