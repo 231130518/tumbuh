@@ -1321,6 +1321,9 @@ img {
   .form-grid {
     gap: 14px;
   }
+  #growth-form .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .impact-inner {
     display: block;
   }
