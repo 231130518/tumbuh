@@ -200,6 +200,10 @@ img {
   font-size: 13px;
   font-weight: 600;
 }
+.navlinks a,
+.nav-cta {
+  white-space: nowrap;
+}
 .navlinks a {
   opacity: 0.83;
   transition: opacity 0.2s;
@@ -1201,17 +1205,7 @@ img {
     font-size: 19px;
   }
 }
-/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
-@media (max-width: 700px) {
-  body {
-    font-size: 14px;
-  }
-  .wrap {
-    width: calc(100% - 36px);
-  }
-  .topbar {
-    padding: 12px 0;
-  }
+@media (max-width: 900px) {
   .navlinks {
     display: none;
     position: absolute;
@@ -1230,6 +1224,21 @@ img {
   }
   .menu-toggle {
     display: block;
+  }
+  .nav > .nav-cta {
+    margin-left: auto;
+  }
+}
+/* Penyesuaian responsif untuk (max-width: 700px) : override hanya berlaku pada ukuran layar yang sesuai. */
+@media (max-width: 700px) {
+  body {
+    font-size: 14px;
+  }
+  .wrap {
+    width: calc(100% - 36px);
+  }
+  .topbar {
+    padding: 12px 0;
   }
   .nav > .nav-cta {
     display: none;
