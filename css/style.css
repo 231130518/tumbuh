@@ -1332,7 +1332,6 @@ img {
     font-size: 37px;
   }
   .index-grid,
-  .articles-grid,
   .check-layout,
   .form-page,
   .footer-columns,
@@ -1368,12 +1367,6 @@ img {
   .big-number small {
     text-align: left;
     margin-left: 6px;
-  }
-  .articles-grid {
-    gap: 18px;
-  }
-  .article-card img {
-    height: 200px;
   }
   .cta {
     padding: 35px 24px;
@@ -4156,4 +4149,26 @@ body[data-page="submit"] button:disabled { cursor: not-allowed; opacity: .55; }
   .admin-session-actions .admin-pill { display: none; }
   .review-pagination { flex-wrap: wrap; justify-content: center; }
   .review-pagination span { width: 100%; text-align: center; order: -1; }
+}
+
+@media (max-width: 750px) {
+  .articles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(10px, 2.5vw, 18px);
+  }
+  .article-card-cover,
+  .skeleton-cards .skeleton-cover {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+  .article-card-cover img,
+  .article-card-cover .article-cover-empty {
+    height: 100%;
+    min-height: 0;
+  }
+  .article-card .article-body,
+  .skeleton-cards .skeleton-body {
+    padding: clamp(10px, 3vw, 20px);
+  }
+  .article-card h3 { font-size: clamp(16px, 3vw, 19px); }
 }
