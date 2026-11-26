@@ -713,6 +713,8 @@ img {
   gap: 22px;
 }
 .article-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #fff;
   border-radius: 22px;
@@ -729,6 +731,9 @@ img {
   object-fit: cover;
 }
 .article-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 24px;
 }
 .article-body h3 {
@@ -743,22 +748,23 @@ img {
   line-height: 1.7;
 }
 .article-card .article-body > p {
+  margin: 0 0 19px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.article-meta {
-  border-top: 1px solid #edf0ec;
-  margin-top: 19px;
-  padding-top: 14px;
-  display: flex;
-  justify-content: space-between;
-  color: #688176;
-  font-size: 11px;
+.article-date {
+  margin-bottom: 7px;
+  font-size: 12px;
+  color: var(--muted);
 }
-.article-meta a {
+.article-read-more {
+  margin-top: auto;
+  border-top: 1px solid #edf0ec;
+  padding-top: 14px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--dark);
 }
@@ -3582,7 +3588,6 @@ html.tumbuh-hero-shown
   }
 }
 
-/* Artikel tanpa kategori: judul langsung setelah gambar. */
 .article-body > h3 {
   margin-top: 0;
 }

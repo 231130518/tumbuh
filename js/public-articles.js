@@ -83,9 +83,13 @@
     if (recommendation) body.append(link(article, "latest-link", "Baca artikel ↗"));
     else {
       body.append(node("p", "", article.subtitle));
-      const meta = node("div", "article-meta");
-      meta.append(link(article, "", "Baca selengkapnya ↗"), node("span", "", date(article.created_at)));
-      body.append(meta);
+      const formattedDate = date(article.created_at);
+      if (formattedDate && article.created_at) {
+        const timestamp = node("time", "article-date", formattedDate);
+        timestamp.dateTime = article.created_at;
+        body.prepend(timestamp);
+      }
+      body.append(link(article, "article-read-more", "Baca selengkapnya ↗"));
     }
     item.append(cover, body);
     return item;
