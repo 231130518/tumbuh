@@ -747,13 +747,19 @@ img {
   color: var(--muted);
   line-height: 1.7;
 }
+.article-card h3 > a,
 .article-card .article-body > p {
-  margin: 0 0 19px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
+}
+.article-card h3 > a {
+  -webkit-line-clamp: 3;
+}
+.article-card .article-body > p {
+  -webkit-line-clamp: 2;
+  margin: 0 0 19px;
 }
 .article-date {
   margin-bottom: 7px;
