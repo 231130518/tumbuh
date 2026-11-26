@@ -769,14 +769,11 @@ img {
 .article-card .article-body > p {
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.article-card h3 > a {
-  -webkit-line-clamp: 3;
-}
 .article-card .article-body > p {
-  -webkit-line-clamp: 2;
   margin: 0 0 19px;
 }
 .article-date {
